@@ -13,3 +13,11 @@ body {
     color-scheme: dark;
   }
 }
+
+.logo {
+  padding: 1px;
+  max-width: 72px;
+  max-height: 50px;
+  margin: 0 auto;
+  vertical-align: middle;
+}
