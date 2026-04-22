@@ -13,6 +13,8 @@ import Clock from "~/components/clock";
 import ProjectSelector from "~/components/projectSelector";
 import Breadcrumbs from "~/components/breadcrumbs";
 import type { IUser } from "~/models/user";
+import UserDropDown from "~/components/userDropDown";
+import type { IUserPreferences } from "~/models/userPreferences";
 
 export async function clientLoader({
   params,
@@ -48,14 +50,36 @@ const GET_PROJECTS_FOR_USER: TypedDocumentNode<
 export default function Layout() {
   const [selectedProject, setSelectedProject] = useState<IProject | undefined>(undefined);
   const data = useLoaderData() as { currentUser: IUser; projects: IProject[] };
-  if (!selectedProject && data.currentUser?.defaultProject) {
-    const defaultProject = data.projects.find(p => p.id === data.currentUser?.defaultProject);
-    setSelectedProject(defaultProject || undefined);
+
+  // if (!selectedProject) {
+  //   const defaultProject = data.projects.find(p => p.id === data.currentUser?.defaultProject);
+  //   setSelectedProject(defaultProject || undefined);
+  // }
+
+  if (!selectedProject) {
+    const selectedProjectId = localStorage.getItem("selectedProject");
+    if (selectedProjectId) {
+      const proj = data.projects.find(p => p.id === selectedProjectId);
+      setSelectedProject(proj);
+    }
   }
+
+  // if (!selectedProject && data.currentUser?.defaultProject) {
+  //   const defaultProject = data.projects.find(p => p.id === data.currentUser?.defaultProject);
+  //   setSelectedProject(defaultProject || undefined);
+  // }
+
+  // let userPreferences: IUserPreferences = {
+  //   selectedProject: selectedProject?.id,
+  // };
+
+  if (selectedProject)
+    localStorage.setItem("selectedProject", selectedProject.id);
+
   return (
     <div>
       <div className="w-full h-24">
-        <div className="fixed top-0 z-10 w-full h-14 bg-[#003366] text-white flex items-center justify-items-stretch px-1">
+        <div className={"fixed top-0 z-10 w-full h-14 flex items-center justify-items-stretch px-1 " + selectedProject?.id + "-primary"}>
           <div className="flex items-center">
             <div className="w-18 h-14 flex items-center justify-center">
               <NavLink to="/">
@@ -64,15 +88,17 @@ export default function Layout() {
             </div> <ProjectSelector projects={data.projects} selectedProject={selectedProject} onProjectSelect={(p) => { setSelectedProject(p) }} />
           </div>
           <div className="flex items-center justify-end flex-1">
-            <div className="p-15"><Clock missionStart={selectedProject?.launchDate} /></div>
-            <div className="pr-4">{data.currentUser?.displayName}</div>
+            <div className="p-10"><Clock missionStart={selectedProject?.launchDate} /></div>
+            <div className="pr-4"><UserDropDown userName={data.currentUser?.displayName} /></div>
           </div>
         </div>
-        <div className="fixed top-14 z-9 w-full h-10 bg-[#ffcc99] items-center flex">
+        <div className={"fixed top-14 z-9 w-full h-10 items-center flex " + selectedProject?.id + "-secondary"}>
           <Breadcrumbs />
         </div>
       </div>
-      <Outlet />
+      <div className="p-3">
+        <Outlet />
+      </div>
     </div>
   );
 }

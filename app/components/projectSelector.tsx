@@ -3,7 +3,7 @@ import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 import { useState } from 'react';
 import type { IProject } from "~/models/project";
 
-export default function ProjectSelector({projects, selectedProject, onProjectSelect}: {projects: IProject[]; selectedProject: IProject | null; onProjectSelect: (project: IProject) => void}) {
+export default function ProjectSelector({projects, selectedProject, onProjectSelect}: {projects: IProject[]; selectedProject: IProject | undefined; onProjectSelect: (project: IProject) => void}) {
     // const [selected, setSelected] = useState<IProject | undefined>(undefined);
     return (
         <Listbox value={selectedProject} onChange={onProjectSelect}>

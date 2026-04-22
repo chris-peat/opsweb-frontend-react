@@ -2,14 +2,18 @@ import { useEffect, useState } from 'react'
 
 export default function Clock({ missionStart }: { missionStart?: string }) {
     const [time, setTime] = useState(new Date())
-    const [isUtc, setIsUtc] = useState(true)
+    const [isUtc, setIsUtc] = useState(localStorage.getItem('showMET') !== 'true');
 
     useEffect(() => {
-        setInterval(() => { setTime(new Date()) }, 1000);
+        const intervalId = setInterval(() => { setTime(new Date()) }, 1000);
+        return () => {
+            clearInterval(intervalId);
+        }
     }, [])
 
     function handleClick() {
         setIsUtc(!isUtc);
+        localStorage.setItem('showMET', (isUtc).toString());
     }
 
     let timeString = '';
