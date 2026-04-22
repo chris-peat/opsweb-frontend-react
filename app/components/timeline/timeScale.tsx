@@ -1,9 +1,5 @@
 import { useEffect, useRef } from "react";
-
-function getXFromTime(time: number, width: number, startTime: Date, duration: number): number {
-    const startTimeMs = startTime.getTime();
-    return ((time - startTimeMs) / duration) * width;
-}
+import { getXFromTime } from "./timelineFunctions";
 
 export default function TimeScale({ width, height, bgdColor, startTime, duration }: { width: number; height: number; bgdColor: string; startTime: Date; duration: number; },) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -20,7 +16,7 @@ export default function TimeScale({ width, height, bgdColor, startTime, duration
         ctx.textBaseline = "bottom";
         ctx.strokeStyle = 'black';
         ctx.lineWidth = 1;
-        let tickSpacing = 3600000;
+        let tickSpacing = 60000;
         let formatStr;
         if (tickSpacing <= 60000)
             formatStr = '%H:%M:%S';

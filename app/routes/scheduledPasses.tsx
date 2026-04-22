@@ -9,6 +9,7 @@ import { type IEvent } from "~/models/event";
 import EventPlot from "~/components/timeline/eventPlot";
 import TimeScale from "~/components/timeline/timeScale";
 import PlotContainer from "~/components/timeline/plotContainer";
+import LegendContainer from "~/components/timeline/legendContainer";
 
 export async function clientLoader({
   params,
@@ -57,20 +58,32 @@ export default function ScheduledPasses() {
   const events = useLoaderData() as IEvent[];
 
   let width = 1200;
-  let startTime = new Date(Date.now() - 1 * 3600 * 1000);
-  let duration = 2 * 3600 * 1000;
+  let startTime = new Date(Date.now() - 60 * 1000);
+  let duration = 10 * 60 * 1000;
 
   return (
     <div>Scheduled Passes
       <EventTable rowCount={10} events={events} />
       <div className="my-10" />
-      <PlotContainer width={width} startTime={startTime} duration={duration}>
-        <EventPlot events={events} width={width} height={40} bgdColor="#cfc" eventColor="#fff" startTime={startTime} duration={duration} />
+      <div className="grid grid-cols-2 gap-0 w-auto" style={{ gridTemplateColumns: "100px auto" }}>
+        <div className="col-1 border-l border-t border-b">
+          <LegendContainer width={200}>
+            <div className="bg-gray-300 h-60px">INU</div>
+            <div className="bg-gray-300 h-60px">WHM</div>
+          </LegendContainer>
+        </div>
+        <div className="col-2 w-50">
+          <PlotContainer width={width} startTime={startTime} duration={duration}>
+            <EventPlot events={events} width={width} height={40} bgdColor="#cfc" eventColor="#fff" startTime={startTime} duration={duration} />
+            <p />
+            <EventPlot events={events} width={width} height={40} bgdColor="#cff" eventColor="#000" startTime={startTime} duration={duration} />
+          </PlotContainer>
+        </div>
         <p />
-        <EventPlot events={events} width={width} height={40} bgdColor="#cff" eventColor="#000" startTime={startTime} duration={duration} />
-      </PlotContainer>
-      <p />
-      <TimeScale width={width} height={20} bgdColor="#ccc" startTime={startTime} duration={duration} />
+        <div className="col-2">
+          <TimeScale width={width} height={20} bgdColor="#ccc" startTime={startTime} duration={duration} />
+        </div>
+      </div>
     </div>
   );
 }
