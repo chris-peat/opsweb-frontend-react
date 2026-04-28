@@ -1,6 +1,12 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
 import { ChevronDownIcon, UserCircleIcon, ArrowRightEndOnRectangleIcon } from '@heroicons/react/20/solid'
 
+function signOut() {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("accessTokenExpiry");
+    window.location.href = "/login";
+}
+
 export default function UserDropDown({ userName }: { userName?: string }) {
     return (
         <div>
@@ -12,7 +18,7 @@ export default function UserDropDown({ userName }: { userName?: string }) {
 
                 <MenuItems anchor="bottom" className="z-10 absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                     <MenuItem>
-                        <a className="block data-focus:bg-blue-100" href="https://opsweb.gsoc.dlr.de/UserProfile.aspx">
+                        <a className="block data-focus:bg-blue-100" href="https://opsweb.gsoc.dlr.de/UserProfile.aspx" >
                             Profile
                         </a>
                     </MenuItem>
@@ -22,7 +28,7 @@ export default function UserDropDown({ userName }: { userName?: string }) {
                         </a>
                     </MenuItem>
                     <MenuItem>
-                        <a className="block data-focus:bg-blue-100" href="/license">
+                        <a className='block data-foc:bg-blue-100' onClick={signOut}>
                             <ArrowRightEndOnRectangleIcon className="size-5" />
                             Logout
                         </a>

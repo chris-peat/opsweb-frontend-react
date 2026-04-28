@@ -6,10 +6,11 @@ import {
 } from "@react-router/dev/routes";
 
 export default [
+  route("login", "./routes/login.tsx"),
   layout("./routes/layout.tsx", [
     index("./routes/mainMenu.tsx"),
     route("settings", "./routes/settings.tsx"),
     route("users", "./routes/users.tsx"),
-    route("scheduled-passes", "./routes/scheduledPasses.tsx"),
-  ]),
+    route("scheduled-passes/:projectId", "./routes/scheduledPasses.tsx"),
+   ]),
 ] satisfies RouteConfig;

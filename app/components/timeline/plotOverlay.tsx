@@ -1,16 +1,20 @@
-import { useEffect, useRef, useState } from "react";
-import { getXFromTime } from "./timelineFunctions";
+import { useContext, useEffect, useRef, useState } from "react";
+import { getXFromTime, TimelineContext } from "./timelineFunctions";
 
-export default function PlotOverlay ({ width, height, startTime, duration }: { width: number; height: number; startTime: Date; duration: number; }) {
+export default function PlotOverlay ({ width, height }: { width: number; height: number; }) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [time, setTime] = useState(new Date())
+    const { duration, startTime, windowWidth } = useContext(TimelineContext);
    
     useEffect(() => {
         const canvas = canvasRef.current;
         const ctx = canvas!.getContext('2d')!;
         ctx.clearRect(0, 0, canvas!.width, canvas!.height);
-        ctx.strokeStyle = 'red';
+        ctx.strokeStyle = '#f00';
         ctx.lineWidth = 1;
+
+        ctx.fillStyle = '#8800';
+        ctx.fillRect(0, 0, canvas!.width, canvas!.height);
 
         const cursorTime = getXFromTime(time.getTime(), width, startTime, duration);
         ctx.beginPath();
@@ -27,6 +31,6 @@ export default function PlotOverlay ({ width, height, startTime, duration }: { w
     }, [])
 
     return (
-            <canvas width={width} height={height} className="border absolute top-0 left-0" ref={canvasRef} />
+            <canvas width={width} height={height} className="absolute top-0 left-0" ref={canvasRef} />
     );
 }

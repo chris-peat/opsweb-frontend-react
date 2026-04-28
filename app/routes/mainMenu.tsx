@@ -1,11 +1,21 @@
 import { NavLink } from "react-router";
+import type { INavMenuGroup } from "~/models/navMenuGroup";
 
-export default function MainMenu() {
+export default function MainMenu({ menuGroups }: { menuGroups: INavMenuGroup[] }) {
   return (
     <div>
-      <NavLink to="settings">Go to settings</NavLink><p/>
-      <NavLink to="users">Go to users</NavLink><p />
-      <NavLink to="scheduled-passes">Go to scheduled passes</NavLink>
+      {/* {menuGroups.map((group) => (
+        <div key={group.title}>
+          <h3>{group.title}</h3>
+          <ul>
+            {group.items.map((item) => (
+              <li key={item.id}>
+                <NavLink to={item.url}>{item.text}</NavLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))} */}
     </div>
   );
 }

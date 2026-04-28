@@ -1,22 +1,27 @@
 import { c } from "@apollo/client/react/internal/compiler-runtime";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useContext } from "react";
 import type { IEvent } from "~/models/event";
+import { TimelineContext, getXFromTime } from './timelineFunctions';
 
-function getXFromTime(time: number, width: number, startTime: Date, duration: number): number {
-    const startTimeMs = startTime.getTime();
-    return  ((time - startTimeMs) / duration) * width;
-}
-
-export default function EventPlot({ width, height, bgdColor, eventColor, startTime, duration, events }: { width: number; height: number; bgdColor: string; eventColor: string; startTime: Date; duration: number; events: IEvent[] },) {
+export default function EventPlot({ bgdColor, eventColor, events, eventFilter }: { bgdColor: string; eventColor: string; events: IEvent[]; eventFilter?: (event: IEvent) => boolean },) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
+    const divRef = useRef<HTMLDivElement>(null);
+    const { duration, startTime, windowWidth } = useContext(TimelineContext);
 
     useEffect(() => {
+        const div = divRef.current!;
+        const width = div.clientWidth;
+        const height = div.clientHeight;
         const canvas = canvasRef.current;
+        canvas!.width = width;
+        canvas!.height = height;
         const ctx = canvas!.getContext('2d')!;
+
         ctx.fillStyle = bgdColor;
         ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height)
 
         events.forEach((event) => {
+            if (eventFilter && !eventFilter(event)) return;
             const x = getXFromTime(event.startTime.getTime(), width, startTime, duration);
             const w = Math.max(getXFromTime(event.startTime.getTime() + event.properties["Duration"], width, startTime, duration) - x, 1);
             ctx.fillStyle = '#fff';
@@ -27,9 +32,11 @@ export default function EventPlot({ width, height, bgdColor, eventColor, startTi
             // ctx.font = '12px monospace';
             // ctx.fillText(event.properties["Description"], x + 2, height / 2);
         });
-    }, [])
+    }, [startTime, duration, windowWidth])
 
     return (
-        <canvas width={width} height={height} ref={canvasRef} />
+        <div className="w-full h-full" ref={divRef}>
+            <canvas ref={canvasRef} />
+        </div>
     );
 }

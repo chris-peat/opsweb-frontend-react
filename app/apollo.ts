@@ -1,23 +1,72 @@
 import { HttpLink, InMemoryCache, ApolloClient } from "@apollo/client";
+import { redirect } from "react-router";
 
 // `request` will be available on the server during SSR or in loaders, but not in the browser
-export const makeClient = (request?: Request) => {
+const makeClient = (request?: Request) => {
     return new ApolloClient({
-        cache: new InMemoryCache(),
+        // cache: new InMemoryCache(),
+        cache: new InMemoryCache({
+                typePolicies: {
+                    GdsScheduleType: {
+                        keyFields: ["scheduledEvents"],
+                    },                    
+                }
+            }),
         link: new HttpLink({
             uri: "https://opsweb.gsoc.dlr.de/api",
             headers: {
-                authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwZWF0IiwiaWF0IjoxNzc2ODQzODQzLCJleHAiOjE3NzY4ODcwNDMsImF1ZCI6Im9wc3dlYmFwaSIsImlzcyI6Im9wc3dlYi5nc29jLmRsci5kZSJ9.yvyx8JORA79yhPKJYR0PCSquo8UdatmnPbGKZfN5Je8",
+                authorization: "Bearer " + localStorage.getItem("accessToken"),
             },
         }),
 
     });
 };
 
+const makeAnonymousClient = () => {
+    return new ApolloClient({
+        cache: new InMemoryCache(),
+        link: new HttpLink({
+            uri: "https://opsweb.gsoc.dlr.de/api",
+        }),
+    });
+};
+
+function checkToken() {
+    const token = localStorage.getItem("accessToken");
+    const expiry = localStorage.getItem("accessTokenExpiry");
+
+    if (!token || !expiry || Date.parse(expiry) < new Date().getTime()) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("accessTokenExpiry");
+        return false;
+    }
+    return true;
+}
+
 let client: ApolloClient | null = null;
+let anonymousClient: ApolloClient | null = null;
+
+
 export const getClient = () => {
-    if (!client) 
+
+    // check that we have a valid authentication token, if not redirect to login page
+    if (!checkToken()) {
+        if (client) {
+            client.clearStore();
+            client = null;
+        }
+        throw redirect("/login");
+    }
+
+    if (!client)
         client = makeClient();
 
     return client;
+};
+
+export const getAnonymousClient = () => {
+    if (!anonymousClient)
+        anonymousClient = makeAnonymousClient();
+
+    return anonymousClient;
 };

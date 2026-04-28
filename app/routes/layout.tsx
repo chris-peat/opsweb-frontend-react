@@ -15,6 +15,10 @@ import Breadcrumbs from "~/components/breadcrumbs";
 import type { IUser } from "~/models/user";
 import UserDropDown from "~/components/userDropDown";
 import type { IUserPreferences } from "~/models/userPreferences";
+import { useNavigate } from 'react-router';
+import type { INavMenuGroup } from "~/models/navMenuGroup";
+import NavDropDown from "~/components/navDropDownLevel1";
+import NavDropDownLevel1 from "~/components/navDropDownLevel1";
 
 export async function clientLoader({
   params,
@@ -47,8 +51,53 @@ const GET_PROJECTS_FOR_USER: TypedDocumentNode<
   }
 `;
 
+const mockMenus = new Map<string, INavMenuGroup[]>([
+  ["EMP", [
+    {
+      title: "Operations",
+      items: [
+        {
+          id: 1,
+          parentId: 0,
+          text: "Next contacts",
+          url: "scheduled-passes/:EN1"
+        }
+      ]
+    }
+  ]],
+  ["EUC", [
+    {
+      title: "Operations",
+      items: [
+        {
+          id: 1,
+          parentId: 0,
+          text: "Next contacts",
+          url: "scheduled-passes/:EUC"
+        }
+      ]
+    },
+    {
+      title: "Tools",
+      items: [
+        {
+          id: 2,
+          parentId: 0,
+          text: "Minutes",
+          url: "scheduled-passes/:EUC"
+        }
+      ]
+    }
+  ]]
+]);
+
+export function HydrateFallback() {
+  return <div>Loading...</div>;
+}
+
 export default function Layout() {
   const [selectedProject, setSelectedProject] = useState<IProject | undefined>(undefined);
+  const [menuGroups, setMenuGroups] = useState<INavMenuGroup[]>([]);
   const data = useLoaderData() as { currentUser: IUser; projects: IProject[] };
 
   // if (!selectedProject) {
@@ -60,7 +109,8 @@ export default function Layout() {
     const selectedProjectId = localStorage.getItem("selectedProject");
     if (selectedProjectId) {
       const proj = data.projects.find(p => p.id === selectedProjectId);
-      setSelectedProject(proj);
+      if (proj)
+        handleProjectSelect(proj);
     }
   }
 
@@ -73,8 +123,11 @@ export default function Layout() {
   //   selectedProject: selectedProject?.id,
   // };
 
-  if (selectedProject)
-    localStorage.setItem("selectedProject", selectedProject.id);
+  function handleProjectSelect(project: IProject) {
+    setSelectedProject(project);
+    setMenuGroups(mockMenus.get(project.id) || []);
+    localStorage.setItem("selectedProject", project.id);
+  }
 
   return (
     <div>
@@ -85,7 +138,7 @@ export default function Layout() {
               <NavLink to="/">
                 <img className="logo" src={"https://opsweb.gsoc.dlr.de/images/" + selectedProject?.logoFile} />
               </NavLink>
-            </div> <ProjectSelector projects={data.projects} selectedProject={selectedProject} onProjectSelect={(p) => { setSelectedProject(p) }} />
+            </div> <ProjectSelector projects={data.projects} selectedProject={selectedProject} onProjectSelect={handleProjectSelect} />
           </div>
           <div className="flex items-center justify-end flex-1">
             <div className="p-10"><Clock missionStart={selectedProject?.launchDate} /></div>
@@ -96,8 +149,15 @@ export default function Layout() {
           <Breadcrumbs />
         </div>
       </div>
-      <div className="p-3">
-        <Outlet />
+      <div className="w-full">
+        <div className="flex flex-col w-20 h-screen fixed top-24">
+          <div className="w-full">
+            <NavDropDownLevel1 navGroups={menuGroups} />
+          </div>
+        </div>
+        <div className="p-3">
+          <Outlet />
+        </div>
       </div>
     </div>
   );

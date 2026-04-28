@@ -2,7 +2,7 @@ import PlotOverlay from "./plotOverlay";
 
 export default function PlotContainer
     ({ width, startTime, duration, children }: { width: number; startTime: Date; duration: number; children: React.ReactNode[] },) {
- 
+
     // height is derived from children
     let height = 0;
     for (let child of children) {
@@ -15,9 +15,6 @@ export default function PlotContainer
     return (
         <div className="relative">
             {children}
-            <div className="absolute top-0 left-0">
-                <PlotOverlay width={width} height={height} startTime={startTime} duration={duration} />
-            </div>
         </div>
     );
 }
