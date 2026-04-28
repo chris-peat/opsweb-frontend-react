@@ -17,8 +17,7 @@ import UserDropDown from "~/components/userDropDown";
 import type { IUserPreferences } from "~/models/userPreferences";
 import { useNavigate } from 'react-router';
 import type { INavMenuGroup } from "~/models/navMenuGroup";
-import NavDropDown from "~/components/navDropDownLevel1";
-import NavDropDownLevel1 from "~/components/navDropDownLevel1";
+import SidebarNavMenu from "~/components/sidebarNavMenu";
 
 export async function clientLoader({
   params,
@@ -74,6 +73,12 @@ const mockMenus = new Map<string, INavMenuGroup[]>([
           parentId: 0,
           text: "Next contacts",
           url: "scheduled-passes/:EUC"
+        },
+        {
+          id: 3,
+          parentId: 0,
+          text: "Recommendations",
+          url: "https://opsweb.gsoc.dlr.de/Recommendations.aspx"
         }
       ]
     },
@@ -150,12 +155,10 @@ export default function Layout() {
         </div>
       </div>
       <div className="w-full">
-        <div className="flex flex-col w-20 h-screen fixed top-24">
-          <div className="w-full">
-            <NavDropDownLevel1 navGroups={menuGroups} />
-          </div>
-        </div>
-        <div className="p-3">
+        {/* <div className={" w-64 h-screen fixed top-24  border-t border-r border-gray-400 " + selectedProject?.id + "-secondary"}> */}
+            <SidebarNavMenu navGroups={menuGroups} />
+        {/* </div> */}
+        <div className="ml-80 p-3">
           <Outlet />
         </div>
       </div>
