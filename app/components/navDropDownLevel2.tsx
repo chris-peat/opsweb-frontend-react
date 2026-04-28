@@ -6,7 +6,7 @@ import type { INavMenuGroup } from '~/models/navMenuGroup';
 import type { INavMenuItem } from '~/models/navMenuItem';
 
 export default function NavDropDownLevel2({ navGroup }: { navGroup: INavMenuGroup }) {
-    const [collapsed, setCollapsed] = useState<boolean>(false);
+    const [collapsed, setCollapsed] = useState<boolean>(true);
     
     function onClick() {
         console.log("clicked");
