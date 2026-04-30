@@ -2,13 +2,13 @@
   * This is the top-level layout for the multi-mission OpsWeb. It provides the header and contains an Outlet 
   * where the content of the different pages will be rendered.
 */
-import { NavLink, Outlet } from "react-router";
-import { useLoaderData } from "react-router";
+import { NavLink, Outlet, redirect } from "react-router";
+import { useLoaderData, useParams } from "react-router";
 import type { Route } from '../+types/root';
 import { getClient } from '../apollo';
 import { gql, type TypedDocumentNode } from "@apollo/client";
 import type { IProject } from "~/models/project";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Clock from "~/components/clock";
 import ProjectSelector from "~/components/projectSelector";
 import Breadcrumbs from "~/components/breadcrumbs";
@@ -51,90 +51,27 @@ const GET_PROJECTS_FOR_USER: TypedDocumentNode<
   }
 `;
 
-const mockMenus = new Map<string, INavMenuGroup[]>([
-  ["EMP", [
-    {
-      title: "Operations",
-      items: [
-        {
-          id: 1,
-          parentId: 0,
-          text: "Next contacts",
-          url: "scheduled-passes/:EN1"
-        }
-      ]
-    }
-  ]],
-  ["EUC", [
-    {
-      title: "Operations",
-      items: [
-        {
-          id: 1,
-          parentId: 0,
-          text: "Next contacts",
-          url: "scheduled-passes/:EUC"
-        },
-        {
-          id: 3,
-          parentId: 0,
-          text: "Recommendations",
-          url: "https://opsweb.gsoc.dlr.de/Recommendations.aspx"
-        }
-      ]
-    },
-    {
-      title: "Tools",
-      items: [
-        {
-          id: 2,
-          parentId: 0,
-          text: "Minutes",
-          url: "scheduled-passes/:EUC"
-        }
-      ]
-    }
-  ]]
-]);
-
 export function HydrateFallback() {
   return <div>Loading...</div>;
 }
 
 export default function Layout() {
   const [selectedProject, setSelectedProject] = useState<IProject | undefined>(undefined);
-  const [menuGroups, setMenuGroups] = useState<INavMenuGroup[]>([]);
-  let navigate = useNavigate();
+  let params = useParams();
   const data = useLoaderData() as { currentUser: IUser; projects: IProject[] };
-
-  // if (!selectedProject) {
-  //   const defaultProject = data.projects.find(p => p.id === data.currentUser?.defaultProject);
-  //   setSelectedProject(defaultProject || undefined);
-  // }
-
-  if (!selectedProject) {
-    const selectedProjectId = localStorage.getItem("selectedProject");
-    if (selectedProjectId) {
-      const proj = data.projects.find(p => p.id === selectedProjectId);
+  
+  if (params.projectId) {
+    const projectId = params.projectId.replace(":", "");
+    if (!selectedProject || selectedProject.id !== projectId) {
+      const proj = data.projects.find(p => p.id === projectId);
       if (proj)
         handleProjectSelect(proj);
     }
   }
 
-  // if (!selectedProject && data.currentUser?.defaultProject) {
-  //   const defaultProject = data.projects.find(p => p.id === data.currentUser?.defaultProject);
-  //   setSelectedProject(defaultProject || undefined);
-  // }
-
-  // let userPreferences: IUserPreferences = {
-  //   selectedProject: selectedProject?.id,
-  // };
-
   function handleProjectSelect(project: IProject) {
-    setSelectedProject(project);
-    setMenuGroups(mockMenus.get(project.id) || []);
-    localStorage.setItem("selectedProject", project.id);
-    navigate("/");
+      setSelectedProject(project);
+      localStorage.setItem("selectedProject", project.id);
   }
 
   return (
@@ -147,7 +84,7 @@ export default function Layout() {
                 <NavLink to="/">
                   <img className="logo" src={"https://opsweb.gsoc.dlr.de/images/" + selectedProject?.logoFile} />
                 </NavLink>
-              </div> <ProjectSelector projects={data.projects} selectedProject={selectedProject} onProjectSelect={handleProjectSelect} />
+              </div> <ProjectSelector projects={data.projects} selectedProject={selectedProject} />
             </div>
             <div className="flex items-center justify-end flex-1">
               <div className="p-10"><Clock missionStart={selectedProject?.launchDate} /></div>

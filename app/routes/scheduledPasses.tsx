@@ -4,7 +4,7 @@ import { type TypedDocumentNode, gql } from "@apollo/client";
 import { getClient } from "~/apollo";
 import type { IProject } from "~/models/project";
 import type { IUser } from "~/models/user";
-import { useLoaderData } from "react-router";
+import { useLoaderData, useParams } from "react-router";
 import { type IEvent } from "~/models/event";
 import EventPlot from "~/components/timeline/eventPlot";
 import TimeScale from "~/components/timeline/timeScale";

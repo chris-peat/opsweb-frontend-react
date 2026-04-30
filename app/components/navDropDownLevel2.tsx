@@ -7,10 +7,17 @@ import type { INavMenuItem } from '~/models/navMenuItem';
 
 export default function NavDropDownLevel2({ navGroup }: { navGroup: INavMenuGroup }) {
     const [collapsed, setCollapsed] = useState<boolean>(true);
-    
+
     function onClick() {
         console.log("clicked");
         setCollapsed(!collapsed);
+    }
+
+    function modifyUrl(url: string) {
+        if (url.includes(".aspx") && !url.startsWith("http")) {
+            return url = "https://opsweb.gsoc.dlr.de/" + url;
+        }
+        return url;
     }
 
     return (
@@ -21,7 +28,8 @@ export default function NavDropDownLevel2({ navGroup }: { navGroup: INavMenuGrou
             <ul className={collapsed ? " hidden" : ""}>
                 {navGroup.items.map((item: INavMenuItem) => (
                     <li className="py-0 space-y-1">
-                        <NavLink className="pl-10 flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group" to={item.url} >
+                        <NavLink className="pl-10 flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group" 
+                            to={modifyUrl(item.url)} >
                             {item.text}
                         </NavLink>
                     </li>

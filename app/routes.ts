@@ -7,10 +7,10 @@ import {
 
 export default [
   route("login", "./routes/login.tsx"),
-  layout("./routes/layout.tsx", [
+  route("project/:projectId", "./routes/layout.tsx", [
     index("./routes/mainMenu.tsx"),
     route("settings", "./routes/settings.tsx"),
     route("users", "./routes/users.tsx"),
-    route("scheduled-passes/:projectId", "./routes/scheduledPasses.tsx"),
+    route("scheduled-passes", "./routes/scheduledPasses.tsx"),
    ]),
 ] satisfies RouteConfig;

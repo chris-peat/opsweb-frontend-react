@@ -1,7 +1,7 @@
 import { getAnonymousClient } from '../apollo';
 import { gql, type TypedDocumentNode } from "@apollo/client";
 import { useActionState } from 'react';
-import { useNavigate } from 'react-router';
+import { redirect, useNavigate } from 'react-router';
 
 const SIGNIN: TypedDocumentNode<
   { signIn: { status: { succeeded: boolean; message: string }; accessToken: string; accessTokenExpiry: string } }
@@ -18,7 +18,7 @@ const SIGNIN: TypedDocumentNode<
 }
 `;
 
-async function submitForm(prevState: any, formData: any): Promise<{ succeeded: boolean; message: string }> {
+async function submitForm(prevState: any, formData: any): Promise<{ succeeded: boolean; message: string, requested: boolean }> {
   const client = getAnonymousClient();
   client.mutate({
     mutation: SIGNIN,
@@ -33,29 +33,40 @@ async function submitForm(prevState: any, formData: any): Promise<{ succeeded: b
     if (result.data?.signIn.status.succeeded) {
       localStorage.setItem("accessToken", result.data?.signIn.accessToken!);
       localStorage.setItem("accessTokenExpiry", result.data?.signIn.accessTokenExpiry!);
-      return { succeeded: true, message: "Sign in successful" };
+      return { succeeded: true, message: "Sign in successful", requested: true };
     }
-    return result.data?.signIn.status || { succeeded: false, message: "Unknown error" };
+    return result.data?.signIn.status || { succeeded: false, message: "Unknown error", requested: true };
   }).catch(error => {
     console.error("Sign in error: ", error);
-    return { data: { signIn: { status: { succeeded: false, message: error.message }, accessToken: "", accessTokenExpiry: "" } } };
+    return { data: { signIn: { status: { succeeded: false, message: error.message }, accessToken: "", accessTokenExpiry: "" } }, requested: true };
   });
 
-  return { succeeded: true, message: "Sign in successful" };
+  return { succeeded: true, message: "Sign in successful", requested: true };
 }
 
 export default function Login() {
-  const [state, formAction, isPending] = useActionState(submitForm, { succeeded: false, message: "" });
-  let navigate = useNavigate();
-
+  const [state, formAction, isPending] = useActionState(submitForm, { succeeded: false, message: "", requested: false });
+  
   if (!isPending && state?.succeeded) {
-    navigate("/");
+    let projId = localStorage.getItem("selectedProject");
+    if (projId) 
+      // window.location.href = "/project/:" + projId;
+      return redirect("/project/:" + projId);
+    else
+      return redirect("/project/:*");
+    // return (
+    //   <div>Redirecting...</div>
+    // );
+  }
+
+  if (!isPending && state?.requested) {
+    console.log("Login failed: ", state?.message);
     return (
-      <div>Redirecting...</div>
+       <div>Login failed: {state?.message}</div>
     );
   }
 
-  console.log("Login state: ", state, " isPending: ", isPending);
+  console.log("Login state: ", state, " isPending: ", isPending, " succeeded: ", state?.succeeded);
   return (
     <form action={formAction}>
       <div className="m-auto w-120 h-50 p-2 bg-gray-200 rounded grid gap-2 mt-20 cols-1">

@@ -1,8 +1,8 @@
 import { HttpLink, InMemoryCache, ApolloClient } from "@apollo/client";
 import { redirect } from "react-router";
 
-// const apiRoot = "https://opsweb.gsoc.dlr.de/api";
-const apiRoot = "http://localhost:3000/graphql";
+const apiRoot = "https://opsweb.gsoc.dlr.de/api";
+//const apiRoot = "http://localhost:3000/graphql";
 
 // `request` will be available on the server during SSR or in loaders, but not in the browser
 const makeClient = (request?: Request) => {
