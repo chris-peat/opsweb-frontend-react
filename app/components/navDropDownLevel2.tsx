@@ -21,14 +21,14 @@ export default function NavDropDownLevel2({ navGroup }: { navGroup: INavMenuGrou
     }
 
     return (
-        <div className="flex gap-2 flex-col">
-            <Button type="button" onClick={onClick} className="flex items-center w-full justify-between px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group">
+        <div className="flex gap-1 flex-col">
+            <Button type="button" onClick={onClick} className="flex items-center w-full justify-between px-2 py-1.5 rounded-base hover:bg-neutral-200 hover:bg-neutral-tertiary hover:text-fg-brand group">
                 {navGroup.title} <ChevronDownIcon className="size-5 self-center justify-self-end sm:size-4" />
             </Button>
             <ul className={collapsed ? " hidden" : ""}>
                 {navGroup.items.map((item: INavMenuItem) => (
-                    <li className="py-0 space-y-1">
-                        <NavLink className="pl-10 flex items-center px-2 py-1.5 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group" 
+                    <li className="">
+                        <NavLink className="pl-10 flex items-center px-2 py-1 hover:bg-neutral-200 rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group" 
                             to={modifyUrl(item.url)} >
                             {item.text}
                         </NavLink>

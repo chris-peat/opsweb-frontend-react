@@ -36,7 +36,7 @@ export default function EventPlot({ bgdColor, eventColor, events, eventFilter }:
 
     return (
         <div className="w-full h-full" ref={divRef}>
-            <canvas ref={canvasRef} />
+            <canvas className="overflow:hidden" ref={canvasRef} />
         </div>
     );
 }

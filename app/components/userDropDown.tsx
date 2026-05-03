@@ -1,5 +1,6 @@
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react'
+import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
 import { ChevronDownIcon, UserCircleIcon, ArrowRightEndOnRectangleIcon } from '@heroicons/react/20/solid'
+import { NavLink } from 'react-router';
 
 function signOut() {
     localStorage.removeItem("accessToken");
@@ -7,34 +8,47 @@ function signOut() {
     window.location.href = "/login";
 }
 
+const userMenuItems = [
+    { id: 1, text: "Profile", url: "https://opsweb.gsoc.dlr.de/UserProfile.aspx" },
+    { id: 2, text: "Sign out", url: "/signout" },
+];
+
 export default function UserDropDown({ userName }: { userName?: string }) {
     return (
-        <div>
-            <Menu>
-                <MenuButton className="inline-flex items-center gap-2 rounded-md px-3 py-1.5 ">
-                    {userName || ''}
-                    <UserCircleIcon className="size-8 fill-white/60" />
-                </MenuButton>
-
-                <MenuItems anchor="bottom" className="z-10 absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                    <MenuItem>
-                        <a className="block data-focus:bg-blue-100" href="https://opsweb.gsoc.dlr.de/UserProfile.aspx" >
-                            Profile
-                        </a>
-                    </MenuItem>
-                    <MenuItem>
-                        <a className="block data-focus:bg-blue-100" href="/support">
-                            Change password
-                        </a>
-                    </MenuItem>
-                    <MenuItem>
-                        <a className='block data-foc:bg-blue-100' onClick={signOut}>
-                            <ArrowRightEndOnRectangleIcon className="size-5" />
-                            Logout
-                        </a>
-                    </MenuItem>
-                </MenuItems>
-            </Menu>
-        </div>
+        <Listbox>
+            <div className="relative mr-0">
+                <ListboxButton className={"cursor-pointer inline-flex w-full grid-cols-1 rounded-md py-1.5 pr-2 pl-3 text-left text-lg hover:text-gray-200 "}>
+                    <UserCircleIcon className="size-8" />
+                </ListboxButton>
+                <div className="absolute top-12 right-40 z-20 ">
+                    <ListboxOptions
+                        transition
+                        className="absolute z-20 mt-1 max-h-56 w-40 overflow-auto rounded-md bg-white py-1 text-base shadow-lg outline-1 outline-black/5 data-leave:transition data-leave:duration-100 data-leave:ease-in data-closed:data-leave:opacity-0 sm:text-sm"
+                    >
+                        <NavLink to={"https://opsweb.gsoc.dlr.de/UserProfile.aspx"}>
+                            <ListboxOption
+                                key={"1"}
+                                value="1"
+                                className="group relative cursor-default py-2 pr-9 pl-3 text-gray-900 select-none data-focus:bg-indigo-600 data-focus:text-white data-focus:outline-hidden"
+                            >
+                                <div className="flex items-center">
+                                    <span className="ml-3 block truncate font-normal group-data-selected:font-semibold">Profile</span>
+                                </div>
+                            </ListboxOption>
+                        </NavLink>
+                        <ListboxOption
+                            key={"2"}
+                            value="2"
+                            onClick={signOut}
+                            className="group relative cursor-default py-2 pr-9 pl-3 text-gray-900 select-none data-focus:bg-indigo-600 data-focus:text-white data-focus:outline-hidden"
+                        >
+                            <div className="flex items-center">
+                                <span className="ml-3 block truncate font-normal group-data-selected:font-semibold">Sign out</span>
+                            </div>
+                        </ListboxOption>
+                    </ListboxOptions>
+                </div>
+            </div>
+        </Listbox >
     )
 }

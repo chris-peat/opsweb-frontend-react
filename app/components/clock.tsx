@@ -38,5 +38,5 @@ export default function Clock({ missionStart }: { missionStart?: string }) {
         const s = Math.floor((met % (60))).toString().padStart(2, '0');
         timeString = `${sign}${d} / ${h}:${m}:${s}`
     }
-    return <div onClick={handleClick}>{showUtc ? 'UTC' : 'MET'} {timeString}</div>
+    return <div className='cursor-pointer hover:text-gray-500/90' onClick={handleClick}>{showUtc ? 'UTC' : 'MET'} {timeString}</div>
 }

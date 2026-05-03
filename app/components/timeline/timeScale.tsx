@@ -68,7 +68,7 @@ export default function TimeScale({ bgdColor }: { bgdColor: string; },) {
     
     return (
         <div className="w-full h-full" ref={divRef}>
-            <canvas ref={canvasRef} />
+            <canvas className="overflow:hidden" ref={canvasRef} />
         </div>  
     );
 }

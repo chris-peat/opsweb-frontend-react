@@ -31,6 +31,6 @@ export default function PlotOverlay ({ width, height }: { width: number; height:
     }, [])
 
     return (
-            <canvas width={width} height={height} className="absolute top-0 left-0" ref={canvasRef} />
+            <canvas width={width} height={height} className="absolute top-0 left-0 overflow-hidden" ref={canvasRef} />
     );
 }
