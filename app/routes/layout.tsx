@@ -18,6 +18,9 @@ import SidebarNavMenu from "~/components/sidebarNavMenu";
 import { ApolloProvider } from "@apollo/client/react";
 import { Button } from "@headlessui/react";
 import { Bars3Icon } from '@heroicons/react/20/solid'
+import { createContext } from "react";
+
+export const ProjectContext = createContext({ project: "EMP", user: "peat" });
 
 export async function clientLoader({
   params,
@@ -49,10 +52,6 @@ const GET_PROJECTS_FOR_USER: TypedDocumentNode<
     }
   }
 `;
-
-export function HydrateFallback() {
-  return <div>Loading...</div>;
-}
 
 export default function Layout() {
   const [selectedProject, setSelectedProject] = useState<IProject | undefined>(undefined);
@@ -106,7 +105,9 @@ export default function Layout() {
         <div className="w-full flex flex-row">
           {showSidebar ? <SidebarNavMenu projectId={selectedProject?.id ?? ""} /> : null}
           <div className="w-full p-4">
-            <Outlet />
+            <ProjectContext value={{ project: selectedProject?.id || "", user: data.currentUser?.name || "" }}>
+              <Outlet />
+            </ProjectContext>
           </div>
         </div>
       </div>

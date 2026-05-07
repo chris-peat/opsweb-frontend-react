@@ -1,11 +1,9 @@
 import { Listbox, ListboxButton, ListboxOption, ListboxOptions } from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
-import { useState } from 'react';
 import { NavLink } from 'react-router';
 import type { IProject } from "~/models/project";
 
 export default function ProjectSelector({ projects, selectedProject }: { projects: IProject[]; selectedProject: IProject | undefined }) {
-    // const [selected, setSelected] = useState<IProject | undefined>(undefined);
     return (
         <Listbox value={selectedProject} >
             <div className="relative ml-4">

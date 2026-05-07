@@ -72,10 +72,6 @@ groundStations.set("NYA", { name: "Ny-Ålesund",lat: 19.8, lon: -155.5, color: "
 groundStations.set("OHG", { name: "o'Higgins",lat: 19.8, lon: -155.5, color: "#fcc" });
 
 
-export function HydrateFallback() {
-  return <div>Loading...</div>;
-}
-
 export default function ScheduledPasses() {
   const events = useLoaderData() as IEvent[];
 
