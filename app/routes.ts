@@ -9,7 +9,7 @@ export default [
   index("./routes/index.tsx"),
   route("login", "./routes/login.tsx"),
   route("project/:projectId", "./routes/layout.tsx", [
-    index("./routes/mainMenu.tsx"),
+    index("./routes/projectHome.tsx"),
     route("settings", "./routes/settings.tsx"),
     route("users", "./routes/users.tsx"),
     route("scheduled-passes", "./routes/scheduledPasses.tsx"),

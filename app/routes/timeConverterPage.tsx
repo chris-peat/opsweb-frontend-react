@@ -1,9 +1,15 @@
 import { type TypedDocumentNode, gql } from "@apollo/client";
 import { getClient } from "~/apollo";
 import TimeConverter from "~/components/timeConverter/timeConverter";
-import type { IProject } from "~/models/project";
 import type { Route } from "./+types";
-import { useLoaderData } from "react-router";
+import { Link, useLoaderData } from "react-router";
+
+export const handle = {
+  breadcrumb: {
+    path: "/project/:projectId/time-converter",
+    text: "Time Converter"
+  }
+};
 
 export async function clientLoader({
   params,
@@ -25,7 +31,7 @@ const GET_LEAP_SECONDS: TypedDocumentNode<{ leapSeconds: string[] }> =
 
 export default function TimeConverterPage() {
   const data = useLoaderData() as { leapSeconds: string[] };
-  
+
   return (
     <div className="m-auto">
       <div className="text-2xl mb-4">Time Converter</div>

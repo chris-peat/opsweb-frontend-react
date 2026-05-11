@@ -1,9 +1,9 @@
-import { NavLink } from "react-router";
+import { Link, NavLink } from "react-router";
 import type { INavMenuGroup } from "~/models/navMenuGroup";
 import { useContext } from "react";
 import { ProjectContext } from "./layout";
 
-export default function MainMenu({ menuGroups }: { menuGroups: INavMenuGroup[] }) {
+export default function ProjectHome({ menuGroups }: { menuGroups: INavMenuGroup[] }) {
   const { project, user } = useContext(ProjectContext);
 
   return (

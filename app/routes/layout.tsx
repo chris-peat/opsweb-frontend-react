@@ -2,7 +2,7 @@
   * This is the top-level layout for the multi-mission OpsWeb. It provides the header and contains an Outlet 
   * where the content of the different pages will be rendered.
 */
-import { NavLink, Outlet } from "react-router";
+import { Link, NavLink, Outlet, useMatches } from "react-router";
 import { useLoaderData, useParams } from "react-router";
 import type { Route } from '../+types/root';
 import { getClient } from '../apollo';
@@ -19,6 +19,7 @@ import { ApolloProvider } from "@apollo/client/react";
 import { Button } from "@headlessui/react";
 import { Bars3Icon } from '@heroicons/react/20/solid'
 import { createContext } from "react";
+import { type IBreadcrumb } from "~/components/breadcrumbs";
 
 export const ProjectContext = createContext({ project: "EMP", user: "peat" });
 
@@ -53,12 +54,20 @@ const GET_PROJECTS_FOR_USER: TypedDocumentNode<
   }
 `;
 
+export const handle = {
+  breadcrumb: {
+    path: "/project/:projectId",
+    text: "Project Home"
+  }
+};
+
 export default function Layout() {
   const [selectedProject, setSelectedProject] = useState<IProject | undefined>(undefined);
   const [showSidebar, setShowSidebar] = useState(true);
   let params = useParams();
   const data = useLoaderData() as { currentUser: IUser; projects: IProject[] };
-
+  const matches = useMatches();
+  
   if (params.projectId) {
     const projectId = params.projectId.replace(":", "");
     if (!selectedProject || selectedProject.id !== projectId) {
@@ -99,6 +108,21 @@ export default function Layout() {
             <Button className="ml-2 mr-4 px-3 py-1.5 cursor-pointer hover:text-gray-200 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group" onClick={toggleSidebar}>
               <Bars3Icon className="size-5 " />
             </Button>
+             {/* <ol>
+                <li key={-1}>
+                  <Link to="#">Time Converter</Link>
+                </li>
+            {matches
+              .filter(
+                (match) =>
+                  match.handle && (match.handle as any).breadcrumb,
+              )
+              .map((match, index) => (
+                <li key={index}>
+                  {(match.handle as any).breadcrumb(match)}
+                </li>
+              ))}
+          </ol> */}
             <Breadcrumbs />
           </div>
         </div>
