@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import TimeInput from './timeInput';
 import { Button, Field, Label, Radio, RadioGroup } from '@headlessui/react';
+import { ProjectContext } from '~/routes/layout';
 
 // GPS epoch in UTC ticks
 const taiEpoch = new Date('1958-01-01T00:00:00Z');
@@ -13,6 +14,7 @@ export default function TimeConverter({ missionStart, leapSeconds }: { missionSt
     const [tai, setTai] = useState(utc_to_tai(Date.now() / 1000));
     const [keepTicking, setKeepTicking] = useState(false);
     const [timeFormat, setTimeFormat] = useState<'date' | 'doy' | 'seconds'>('date');
+    const { project, user } = useContext(ProjectContext);
 
     // LeapSeconds converted to Tai-Time
     const leapSecsTai: number[] = [];
@@ -80,7 +82,7 @@ export default function TimeConverter({ missionStart, leapSeconds }: { missionSt
         setTai(utc_to_tai(secs));
     }
 
-    const buttonClasses = "items-center justify-center px-2 py-1 text-base font-medium leading-6 text-white whitespace-no-wrap bg-blue-600 border border-blue-700 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500";
+    const buttonClasses = project + "-primary items-center justify-center px-2 py-1 text-base font-medium leading-6 whitespace-no-wrap border border-blue-700 rounded-md shadow-sm hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500";
     const radioClasses = "group flex size-4 rounded-full border inset-ring-2 ring-black bg-white data-checked:bg-blue-400";
 
     return (

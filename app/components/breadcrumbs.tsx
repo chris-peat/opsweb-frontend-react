@@ -24,8 +24,8 @@ export default function Breadcrumbs() {
       (match) =>
         match.handle && (match.handle as any).breadcrumb,
     )
-    .map((match, index) => {
-      let breadcrumb = (match.handle as any).breadcrumb as IBreadcrumb;
+    .map((match) => {
+      let breadcrumb = {...((match.handle as any).breadcrumb as IBreadcrumb)};
       for (let param of Object.keys(match.params)) {
         breadcrumb.path = breadcrumb.path.replace(`:${param}`, match.params[param] as string)
       }

@@ -8,7 +8,7 @@ import type { Route } from '../+types/root';
 import { getClient } from '../apollo';
 import { gql, type TypedDocumentNode } from "@apollo/client";
 import type { IProject } from "~/models/project";
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import Clock from "~/components/clock";
 import ProjectSelector from "~/components/projectSelector";
 import Breadcrumbs from "~/components/breadcrumbs";
@@ -19,7 +19,6 @@ import { ApolloProvider } from "@apollo/client/react";
 import { Button } from "@headlessui/react";
 import { Bars3Icon } from '@heroicons/react/20/solid'
 import { createContext } from "react";
-import { type IBreadcrumb } from "~/components/breadcrumbs";
 
 export const ProjectContext = createContext({ project: "EMP", user: "peat" });
 
@@ -64,6 +63,7 @@ export const handle = {
 export default function Layout() {
   const [selectedProject, setSelectedProject] = useState<IProject | undefined>(undefined);
   const [showSidebar, setShowSidebar] = useState(true);
+  const { project, user } = useContext(ProjectContext);
   let params = useParams();
   const data = useLoaderData() as { currentUser: IUser; projects: IProject[] };
   const matches = useMatches();
@@ -108,30 +108,15 @@ export default function Layout() {
             <Button className="ml-2 mr-4 px-3 py-1.5 cursor-pointer hover:text-gray-200 text-body rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group" onClick={toggleSidebar}>
               <Bars3Icon className="size-5 " />
             </Button>
-             {/* <ol>
-                <li key={-1}>
-                  <Link to="#">Time Converter</Link>
-                </li>
-            {matches
-              .filter(
-                (match) =>
-                  match.handle && (match.handle as any).breadcrumb,
-              )
-              .map((match, index) => (
-                <li key={index}>
-                  {(match.handle as any).breadcrumb(match)}
-                </li>
-              ))}
-          </ol> */}
             <Breadcrumbs />
           </div>
         </div>
         <div className="w-full flex flex-row">
           {showSidebar ? <SidebarNavMenu projectId={selectedProject?.id ?? ""} /> : null}
           <div className="w-full p-4">
-            <ProjectContext value={{ project: selectedProject?.id || "", user: data.currentUser?.name || "" }}>
+            <ProjectContext.Provider value={{ project: selectedProject?.id || "", user: data.currentUser?.name || "" }}>
               <Outlet />
-            </ProjectContext>
+            </ProjectContext.Provider>
           </div>
         </div>
       </div>
