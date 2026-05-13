@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react'
 import TimeInput from './timeInput';
 import { Button, Field, Label, Radio, RadioGroup } from '@headlessui/react';
-import { ProjectContext } from '~/routes/layout';
+import { useOpsWebContext } from '~/routes/layout';
 
 // GPS epoch in UTC ticks
 const taiEpoch = new Date('1958-01-01T00:00:00Z');
@@ -14,8 +14,8 @@ export default function TimeConverter({ missionStart, leapSeconds }: { missionSt
     const [tai, setTai] = useState(utc_to_tai(Date.now() / 1000));
     const [keepTicking, setKeepTicking] = useState(false);
     const [timeFormat, setTimeFormat] = useState<'date' | 'doy' | 'seconds'>('date');
-    const { project, user } = useContext(ProjectContext);
-
+    const { project, user } = useOpsWebContext();
+  
     // LeapSeconds converted to Tai-Time
     const leapSecsTai: number[] = [];
     let taiOffset = 10; // Initial TAI offset from UTC in seconds

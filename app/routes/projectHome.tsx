@@ -1,10 +1,9 @@
 import { Link, NavLink } from "react-router";
 import type { INavMenuGroup } from "~/models/navMenuGroup";
-import { useContext } from "react";
-import { ProjectContext } from "./layout";
+import { useOpsWebContext } from '~/routes/layout';
 
 export default function ProjectHome({ menuGroups }: { menuGroups: INavMenuGroup[] }) {
-  const { project, user } = useContext(ProjectContext);
+  const { project, user } = useOpsWebContext();
 
   return (
     <div>

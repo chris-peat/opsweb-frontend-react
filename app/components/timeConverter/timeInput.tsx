@@ -1,6 +1,6 @@
 import { Button, Input } from '@headlessui/react';
-import { useContext, useEffect, useState, type ReactEventHandler } from 'react'
-import { ProjectContext } from '~/routes/layout';
+import { useEffect, useState } from 'react'
+import { useOpsWebContext } from '~/routes/layout';
 
 function formatDate(seconds: number, t0: Date) {
     return new Date(t0.getTime() + seconds * 1000).toISOString().slice(0, 19).replace('T', ' ');
@@ -27,7 +27,7 @@ export default function TimeInput({ seconds, t0, enabled, missionStart, format, 
         onChange: (secs: number) => void
     }) {
     const [formattedValue, setFormattedValue] = useState("");
-    const { project, user } = useContext(ProjectContext);
+    const { project, user } = useOpsWebContext();
     
     const buttonClasses = project + "-primary items-center justify-center px-2 py-1 leading-6 whitespace-no-wrap border border-blue-700 rounded-md shadow-sm hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500";
     const inputClasses = "px-2 py-1 text-base font-medium leading-6 text-black bg-yellow-100 border border-gray-400 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500";

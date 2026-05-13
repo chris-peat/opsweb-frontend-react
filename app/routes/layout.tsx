@@ -2,13 +2,12 @@
   * This is the top-level layout for the multi-mission OpsWeb. It provides the header and contains an Outlet 
   * where the content of the different pages will be rendered.
 */
-import { Link, NavLink, Outlet, useMatches } from "react-router";
-import { useLoaderData, useParams } from "react-router";
+import { NavLink, Outlet, useMatches, useOutletContext, useLoaderData, useParams } from "react-router";
 import type { Route } from '../+types/root';
 import { getClient } from '../apollo';
 import { gql, type TypedDocumentNode } from "@apollo/client";
 import type { IProject } from "~/models/project";
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import Clock from "~/components/clock";
 import ProjectSelector from "~/components/projectSelector";
 import Breadcrumbs from "~/components/breadcrumbs";
@@ -18,9 +17,11 @@ import SidebarNavMenu from "~/components/sidebarNavMenu";
 import { ApolloProvider } from "@apollo/client/react";
 import { Button } from "@headlessui/react";
 import { Bars3Icon } from '@heroicons/react/20/solid'
-import { createContext } from "react";
 
-export const ProjectContext = createContext({ project: "EMP", user: "peat" });
+type ContextType = { project: string, user: string };
+export function useOpsWebContext() {
+  return useOutletContext<ContextType>();
+}
 
 export async function clientLoader({
   params,
@@ -63,7 +64,6 @@ export const handle = {
 export default function Layout() {
   const [selectedProject, setSelectedProject] = useState<IProject | undefined>(undefined);
   const [showSidebar, setShowSidebar] = useState(true);
-  const { project, user } = useContext(ProjectContext);
   let params = useParams();
   const data = useLoaderData() as { currentUser: IUser; projects: IProject[] };
   const matches = useMatches();
@@ -114,9 +114,7 @@ export default function Layout() {
         <div className="w-full flex flex-row">
           {showSidebar ? <SidebarNavMenu projectId={selectedProject?.id ?? ""} /> : null}
           <div className="w-full p-4">
-            <ProjectContext.Provider value={{ project: selectedProject?.id || "", user: data.currentUser?.name || "" }}>
-              <Outlet />
-            </ProjectContext.Provider>
+              <Outlet context={{project: selectedProject?.id || "", user: data.currentUser?.name || ""} satisfies ContextType} />
           </div>
         </div>
       </div>
