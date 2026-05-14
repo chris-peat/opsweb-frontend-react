@@ -2,12 +2,12 @@
   * This is the top-level layout for the multi-mission OpsWeb. It provides the header and contains an Outlet 
   * where the content of the different pages will be rendered.
 */
-import { NavLink, Outlet, useMatches, useOutletContext, useLoaderData, useParams } from "react-router";
+import { NavLink, Outlet, useMatches, useOutletContext, useLoaderData, useParams, useNavigate } from "react-router";
 import type { Route } from '../+types/root';
 import { getClient } from '../apollo';
 import { gql, type TypedDocumentNode } from "@apollo/client";
 import type { IProject } from "~/models/project";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Clock from "~/components/clock";
 import ProjectSelector from "~/components/projectSelector";
 import Breadcrumbs from "~/components/breadcrumbs";
@@ -63,11 +63,18 @@ export const handle = {
 
 export default function Layout() {
   const [selectedProject, setSelectedProject] = useState<IProject | undefined>(undefined);
-  const [showSidebar, setShowSidebar] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(localStorage.getItem('showSidebar') == 'true');
   let params = useParams();
   const data = useLoaderData() as { currentUser: IUser; projects: IProject[] };
-  const matches = useMatches();
-  
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!params.projectId || params.projectId === ":*") {
+      const proj = data.projects[0];
+      navigate(`/project/:${proj.id}`)
+    }
+  }, [params.projectId]);
+
   if (params.projectId) {
     const projectId = params.projectId.replace(":", "");
     if (!selectedProject || selectedProject.id !== projectId) {
@@ -79,6 +86,7 @@ export default function Layout() {
 
   function toggleSidebar() {
     setShowSidebar(!showSidebar);
+    localStorage.setItem('showSidebar', (!showSidebar).toString());
   };
 
   function handleProjectSelect(project: IProject) {
@@ -114,7 +122,7 @@ export default function Layout() {
         <div className="w-full flex flex-row">
           {showSidebar ? <SidebarNavMenu projectId={selectedProject?.id ?? ""} /> : null}
           <div className="w-full p-4">
-              <Outlet context={{project: selectedProject?.id || "", user: data.currentUser?.name || ""} satisfies ContextType} />
+            <Outlet context={{ project: selectedProject?.id || "", user: data.currentUser?.name || "" } satisfies ContextType} />
           </div>
         </div>
       </div>

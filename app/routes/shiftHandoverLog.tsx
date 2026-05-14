@@ -34,7 +34,7 @@ export default function ShiftHandoverLog() {
   const data = useLoaderData() as { leapSeconds: string[] };
 
   return (
-    <div className="m-auto py-4">
+    <div className="flex items-center justify-center py-4">
       <ShiftHandoverLogH2S />
     </div>
   );

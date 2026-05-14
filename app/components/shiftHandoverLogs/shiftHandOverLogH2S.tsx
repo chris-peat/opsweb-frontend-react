@@ -96,8 +96,8 @@ export default function ShiftHandoverLogH2S() {
                 <div className={`col-1 border-l text-right ${grayClasses}`}>
                     ACS
                 </div>
-                <div className={`col-2`}>
-                    <StatusColorSelector name="acs" value="red" />
+                <div className="bg-gray-300">
+                    <StatusColorSelector name="acs" required />
                 </div>
                 <div className={`text-right ${grayClasses}`}>
                     THM
