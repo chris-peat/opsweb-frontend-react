@@ -4,12 +4,15 @@ import { useOpsWebContext } from '~/routes/layout';
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import StatusColorSelector from '../statusColorSelector';
 
+
+
 export default function ShiftHandoverLogH2S() {
     const { project, user } = useOpsWebContext();
     const [shl, setShl] = useState({ notes: "Chris", shift: "Morning" });
-
+    const [colors, setColors] = useState<Record<string, string>>({});
 
     function handlePrefill() {
+        setColors({ acs: 'green', thm: 'green', cpps: 'green', bdh: 'green', epps: 'green', cry: 'green', pwr: 'green', ttr: 'green', wt: 'green', mil: 'green', ssu: 'green', gcuBackup: 'green', gcuPrime: 'green' });
     }
 
     function handleSubmit() {
@@ -26,11 +29,11 @@ export default function ShiftHandoverLogH2S() {
     }
 
     const titleClasses = project + "-secondary items-left align-middle px-2 text-base";
-    const grayClasses = "items-left align-middle px-2 text-base bg-gray-300";
+    const grayClasses = "items-left align-middle px-2 text-base bg-gray-200";
     const checkClasses = "group block size-4 rounded border bg-white data-checked:bg-blue-500";
     const textareaClasses = "resize-none px-1 text-sm";
     const inputClasses = "px-2 text-base font-medium leading-6 text-black bg-white border border-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500";
-    const buttonClasses = project + "-primary items-center justify-center px-2 py-1 text-base font-medium leading-6 whitespace-no-wrap border border-blue-700 rounded-md shadow-sm hover:cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500";
+    const buttonClasses = project + "-primary items-center justify-center px-2 py-1 text-base font-medium leading-6 whitespace-no-wrap border border-blue-700 rounded-md shadow-sm hover:cursor-pointer hover:brightness-90 focus:outline-none";
     const listboxClasses = "group flex gap-2 bg-white data-focus:bg-blue-100";
     const listboxButtonClasses = "relative block w-full rounded-lg bg-white/5 pr-8 pl-3 text-left text-sm/6 text-black"
 
@@ -96,14 +99,14 @@ export default function ShiftHandoverLogH2S() {
                 <div className={`col-1 border-l text-right ${grayClasses}`}>
                     ACS
                 </div>
-                <div className="bg-gray-300">
-                    <StatusColorSelector name="acs" required />
+                <div className="bg-gray-200">
+                    <StatusColorSelector name="acs" value={colors['acs']} required />
                 </div>
                 <div className={`text-right ${grayClasses}`}>
                     THM
                 </div>
-                <div className={``}>
-                    <Input type="text" defaultValue={""} className={inputClasses} />
+                <div className="bg-gray-200">
+                    <StatusColorSelector name="thm" value={colors['thm']} required />
                 </div>
                 <div className={`col-span-2 row-span-4 h-full border-r`}>
                     <Textarea defaultValue={""} className={textareaClasses} name="outOfOrder" />
@@ -111,38 +114,38 @@ export default function ShiftHandoverLogH2S() {
                 <div className={`col-1 border-l text-right ${grayClasses}`}>
                     CPPS
                 </div>
-                <div className={`col-2`}>
-                    <Input type="text" defaultValue={""} className={inputClasses} />
+                <div className="bg-gray-200">
+                    <StatusColorSelector name="cpps" value={colors['cpps']} required />
                 </div>
                 <div className={`text-right ${grayClasses}`}>
                     BDH
                 </div>
-                <div className={``}>
-                    <Input type="text" defaultValue={""} className={inputClasses} />
+                <div className="bg-gray-200">
+                    <StatusColorSelector name="bdh" value={colors['bdh']} required />
                 </div>
                 <div className={`col-1 border-l text-right ${grayClasses}`}>
                     EPPS
                 </div>
-                <div className={`col-2`}>
-                    <Input type="text" defaultValue={""} className={inputClasses} />
+                <div className="bg-gray-200">
+                    <StatusColorSelector name="epps" value={colors['epps']} required />
                 </div>
                 <div className={`text-right ${grayClasses}`}>
                     CRY
                 </div>
-                <div className={``}>
-                    <Input type="text" defaultValue={""} className={inputClasses} />
+                <div className="bg-gray-200">
+                    <StatusColorSelector name="cry" value={colors['cry']} required />
                 </div>
                 <div className={`col-1 border-l text-right ${grayClasses}`}>
                     PWR
                 </div>
-                <div className={`col-2`}>
-                    <Input type="text" defaultValue={""} className={inputClasses} />
+                <div className="bg-gray-200">
+                    <StatusColorSelector name="pwr" value={colors['pwr']} required />
                 </div>
                 <div className={`text-right ${grayClasses}`}>
                     TTR
                 </div>
-                <div className={``}>
-                    <Input type="text" defaultValue={""} className={inputClasses} />
+                <div className="bg-gray-200">
+                    <StatusColorSelector name="ttr" value={colors['ttr']} required />
                 </div>
                 <div className={'col-span-4 border-l ' + titleClasses}>
                     Payload
@@ -153,19 +156,19 @@ export default function ShiftHandoverLogH2S() {
                 <div className={`border-l text-right ${grayClasses}`}>
                     W/T
                 </div>
-                <div className={``}>
-                    <Input type="text" defaultValue={""} className={inputClasses} />
+                 <div className="bg-gray-200">
+                    <StatusColorSelector name="wt" value={colors['wt']} required />
                 </div>
                 <div className={`text-right ${grayClasses}`}>
                     MIL
                 </div>
-                <div className={``}>
-                    <Input type="text" defaultValue={""} className={inputClasses} />
+                <div className="bg-gray-200">
+                    <StatusColorSelector name="mil" value={colors['mil']} required />
                 </div>
-                <div className={`text-right ${grayClasses}`}>
+                  <div className={`text-right ${grayClasses}`}>
                     RIs
                 </div>
-                <div className={``}>
+                <div className="bg-gray-200 border-r">
                     <Input type="text" defaultValue={""} className={inputClasses} />
                 </div>
                 <div className={'col-span-4 border-l ' + titleClasses}>
@@ -177,33 +180,30 @@ export default function ShiftHandoverLogH2S() {
                 <div className={`border-l text-right ${grayClasses}`}>
                     SSU
                 </div>
-                <div className={``}>
-                    <Input type="text" defaultValue={""} className={inputClasses} />
+                 <div className="bg-gray-200">
+                    <StatusColorSelector name="ssu" value={colors['ssu']} required />
                 </div>
-                <div className={`text-right ${grayClasses}`}>
+                 <div className={`text-right ${grayClasses}`}>
                     GCU Backup
                 </div>
-                <div className={``}>
-                    <Input type="text" defaultValue={""} className={inputClasses} />
+                  <div className="bg-gray-200">
+                    <StatusColorSelector name="gcuBackup" value={colors['gcuBackup']} required />
                 </div>
-                <div className={`text-right ${grayClasses}`}>
+               <div className={`text-right ${grayClasses}`}>
                     RIs
                 </div>
-                <div className={``}>
+                <div className="bg-gray-200 border-r">
                     <Input type="text" defaultValue={""} className={inputClasses} />
                 </div>
                 <div className={`border-l text-right ${grayClasses}`}>
                     GCU Prime
                 </div>
-                <div className={``}>
-                    <Input type="text" defaultValue={""} className={inputClasses} />
+                  <div className="bg-gray-200">
+                    <StatusColorSelector name="gcuPrime" value={colors['gcuPrime']} required />
                 </div>
                 <div className={`text-right ${grayClasses}`}>
                 </div>
-                <div className={``}>
-                    <Input type="text" defaultValue={""} className={inputClasses} />
-                </div>
-                <div className={`col-span-2 row-span-2 border-r ${grayClasses}`}>
+                <div className={`col-span-3 row-span-2 border-r ${grayClasses}`}>
                 </div>
                 <div className={`border-l text-right ${grayClasses}`}>
                     L1 Arc Value
@@ -212,9 +212,6 @@ export default function ShiftHandoverLogH2S() {
                     <Input type="text" defaultValue={""} className={inputClasses} />
                 </div>
                 <div className={`text-right ${grayClasses}`}>
-                </div>
-                <div className={``}>
-                    <Input type="text" defaultValue={""} className={inputClasses} />
                 </div>
                 <div className={'border-l ' + titleClasses}>
                     Ground Status
@@ -284,13 +281,13 @@ export default function ShiftHandoverLogH2S() {
                     GEO Daily Check
                 </div>
                 <div className={`flex justify-center items-center p-1 ${grayClasses}`}>
-                    <Checkbox className={checkClasses}></Checkbox>
+                    <Checkbox className={checkClasses} name="geoDailyCheck" defaultChecked={false}></Checkbox>
                 </div>
                 <div className={`text-right ${grayClasses}`}>
                     GECCOS Check all Chains
                 </div>
                 <div className={`flex justify-center items-center p-1 ${grayClasses}`}>
-                    <Checkbox className={checkClasses}></Checkbox>
+                    <Checkbox className={checkClasses} name="geccosCheck" defaultChecked={true}></Checkbox>
                 </div>
                 <div className={`row-span-6 col-span-2 border-r ${grayClasses}`}>
                 </div>

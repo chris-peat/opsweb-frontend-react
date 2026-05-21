@@ -1,34 +1,57 @@
-import { Select } from '@headlessui/react'
-import { useState } from 'react';
+import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/react'
+import { useEffect, useState } from 'react';
 
-const colorClasses: Record<string, string> = {
-    '': 'bg-white',
-    green: 'bg-green-300',
-    yellow: 'bg-yellow-300',
-    red: 'bg-red-300',
-};
+const options = [
+    { value: '',       bgClass: 'bg-white',      focusClass: 'data-focus:border-l-4 data-focus:border-gray-500'   },
+    { value: 'green',  bgClass: 'bg-green-300',  focusClass: 'data-focus:border-l-4 data-focus:border-green-700'  },
+    { value: 'yellow', bgClass: 'bg-yellow-300', focusClass: 'data-focus:border-l-4 data-focus:border-yellow-700' },
+    { value: 'red',    bgClass: 'bg-red-300',    focusClass: 'data-focus:border-l-4 data-focus:border-red-700'    },
+];
 
 export default function StatusColorSelector({ name, value, required }: { name?: string, value?: string, required?: boolean }) {
     const [color, setColor] = useState(value ?? '');
+    const [showError, setShowError] = useState(false);
 
-    function handleChange(event: any) {
-        event.target.setCustomValidity('');
-        setColor(event.target.value);
+    useEffect(() => {
+        setColor(value ?? '');
+        setShowError(false);
+    }, [value]);
+    const selected = options.find(o => o.value === color) ?? options[0];
+
+    function handleChange(newColor: string) {
+        setShowError(false);
+        setColor(newColor);
     }
 
     return (
-        <Select
-            name={name}
-            value={color}
-            required={required}
-            className={`block w-40 appearance-none border-none ${colorClasses[color] ?? ''} px-1 text-sm/6 text-transparent data-hover:cursor-pointer`}
-            onChange={handleChange}
-            onInvalid={(e: any) => e.target.setCustomValidity('Please select status')}
-        >
-            <option value="" className='bg-white'>Select status...</option>
-            <option value="green" className='bg-green-300 hover:bg-green-100'></option>
-            <option value="yellow" className='bg-yellow-300'></option>
-            <option value="red" className='bg-red-300'></option>
-        </Select>
-    )
+        <div className="w-40">
+            <Listbox value={color} onChange={handleChange}>
+                <ListboxButton className={`w-full h-5 ${selected.bgClass} border cursor-pointer flex items-center px-1`}>
+                    {color === '' && <span className="text-gray-500 text-sm">Select status...</span>}
+                </ListboxButton>
+                <ListboxOptions anchor="bottom" className="w-40 bg-white border-gray-300 shadow-lg z-10">
+                    {options.map(opt => (
+                        <ListboxOption
+                            key={opt.value}
+                            value={opt.value}
+                            className={`${opt.bgClass} ${opt.focusClass} h-6 cursor-pointer flex items-center px-1`}
+                        >
+                            {opt.value === '' && <span className="text-gray-500 text-sm">Select status...</span>}
+                        </ListboxOption>
+                    ))}
+                </ListboxOptions>
+            </Listbox>
+            {showError && <p className="text-red-600 text-xs mt-0.5">Please select status</p>}
+            <input
+                type="text"
+                name={name}
+                value={color}
+                required={required}
+                onChange={() => {}}
+                tabIndex={-1}
+                className="absolute opacity-0 pointer-events-none w-0 h-0"
+                onInvalid={(e: any) => { e.preventDefault(); setShowError(true); }}
+            />
+        </div>
+    );
 }
