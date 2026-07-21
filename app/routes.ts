@@ -13,6 +13,9 @@ export default [
     route("users", "./routes/users.tsx"),
     route("scheduled-passes", "./routes/scheduledPasses.tsx"),
     route("time-converter", "./routes/timeConverterPage.tsx"),
-    route("shift-handover-log", "./routes/shiftHandoverLog.tsx"),
-   ]),
+    route("shift-handover-logs", "./routes/shiftHandoverLogs.tsx"),
+    route("shift-handover-logs/:number", "./routes/shiftHandoverLog.tsx"),
+    route("pass-logs", "./routes/passLogs.tsx"),
+    route("pass-logs/:number", "./routes/passLog.tsx"),
+  ]),
 ] satisfies RouteConfig;

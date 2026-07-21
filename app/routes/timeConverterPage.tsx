@@ -5,10 +5,10 @@ import type { Route } from "./+types";
 import { Link, useLoaderData } from "react-router";
 
 export const handle = {
-  breadcrumb: {
+  breadcrumbs: [{
     path: "/project/:projectId/time-converter",
     text: "Time Converter"
-  }
+  }]
 };
 
 export async function clientLoader({

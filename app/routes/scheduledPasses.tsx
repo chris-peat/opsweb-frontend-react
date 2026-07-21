@@ -2,16 +2,9 @@ import EventTable from "~/components/eventTable";
 import type { Route } from "../+types/root";
 import { type TypedDocumentNode, gql } from "@apollo/client";
 import { getClient } from "~/apollo";
-import type { IProject } from "~/models/project";
-import type { IUser } from "~/models/user";
-import { useLoaderData, useParams } from "react-router";
+import { useLoaderData } from "react-router";
 import { type IEvent } from "~/models/event";
 import EventPlot from "~/components/timeline/eventPlot";
-import TimeScale from "~/components/timeline/timeScale";
-import PlotContainer from "~/components/timeline/plotContainer";
-import LegendContainer from "~/components/timeline/legendContainer";
-import PlotOverlay from "~/components/timeline/plotOverlay";
-import Timeline from "~/components/timeline/timelineDisplay";
 import TimelineRow from "~/components/timeline/timelineRow";
 import TimelineDisplay from "~/components/timeline/timelineDisplay";
 
@@ -72,10 +65,10 @@ groundStations.set("NYA", { name: "Ny-Ålesund",lat: 19.8, lon: -155.5, color: "
 groundStations.set("OHG", { name: "o'Higgins",lat: 19.8, lon: -155.5, color: "#fcc" });
 
 export const handle = {
-  breadcrumb: {
+  breadcrumbs: [{
     path: "/project/:projectId/scheduled-passes",
     text: "Scheduled Passes"
-  }
+  }]
 };
 
 export default function ScheduledPasses() {

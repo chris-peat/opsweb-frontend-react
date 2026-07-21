@@ -28,7 +28,7 @@ export default function NavDropDownLevel2({ navGroup }: { navGroup: INavMenuGrou
             <ul className={collapsed ? " hidden" : ""}>
                 {navGroup.items.map((item: INavMenuItem) => (
                     <li className="">
-                        <NavLink className="pl-10 flex items-center px-2 py-1 hover:bg-neutral-200 rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group" 
+                        <NavLink className="pl-10 flex items-center px-2 py-1 hover:bg-neutral-200 rounded-base hover:bg-neutral-tertiary hover:text-fg-brand group"
                             to={modifyUrl(item.url)} >
                             {item.text}
                         </NavLink>

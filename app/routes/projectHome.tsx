@@ -17,7 +17,7 @@ export default function ProjectHome({ menuGroups }: { menuGroups: INavMenuGroup[
           <NavLink to="scheduled-passes">Scheduled passes</NavLink>
         </div>
         <div>
-          <NavLink to="shift-handover-log">Shift Handover Log</NavLink>
+          <NavLink to="shift-handover-logs">Shift Handover Logs</NavLink>
         </div>
       </div>
       {/* {menuGroups.map((group) => (

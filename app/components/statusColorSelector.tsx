@@ -8,7 +8,7 @@ const options = [
     { value: 'red',    bgClass: 'bg-red-300',    focusClass: 'data-focus:border-l-4 data-focus:border-red-700'    },
 ];
 
-export default function StatusColorSelector({ name, value, required }: { name?: string, value?: string, required?: boolean }) {
+export default function StatusColorSelector({ name, value, required, onChange, disabled }: { name?: string, value?: string, required?: boolean, onChange?: (value: string) => void, disabled?: boolean }) {
     const [color, setColor] = useState(value ?? '');
     const [showError, setShowError] = useState(false);
 
@@ -21,11 +21,12 @@ export default function StatusColorSelector({ name, value, required }: { name?: 
     function handleChange(newColor: string) {
         setShowError(false);
         setColor(newColor);
+        onChange?.(newColor);
     }
 
     return (
         <div className="w-40">
-            <Listbox value={color} onChange={handleChange}>
+            <Listbox value={color} onChange={handleChange} disabled={disabled}>
                 <ListboxButton className={`w-full h-5 ${selected.bgClass} border cursor-pointer flex items-center px-1`}>
                     {color === '' && <span className="text-gray-500 text-sm">Select status...</span>}
                 </ListboxButton>

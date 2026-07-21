@@ -1,20 +1,21 @@
 import { HttpLink, InMemoryCache, ApolloClient } from "@apollo/client";
 import { redirect } from "react-router";
 
-const apiRoot = "https://opsweb.gsoc.dlr.de/api";
-//const apiRoot = "http://localhost:3000/graphql";
+const apiRoot = import.meta.env.DEV ? "http://localhost:3000/graphql" : "https://opsweb.gsoc.dlr.de/api";
+//const apiRoot = "https://opsweb.gsoc.dlr.de/api";
+console.log("API Root: " + apiRoot);
 
 // `request` will be available on the server during SSR or in loaders, but not in the browser
 const makeClient = (request?: Request) => {
     return new ApolloClient({
         // cache: new InMemoryCache(),
         cache: new InMemoryCache({
-                typePolicies: {
-                    GdsScheduleType: {
-                        keyFields: ["scheduledEvents"],
-                    },                    
-                }
-            }),
+            typePolicies: {
+                GdsScheduleType: {
+                    keyFields: ["scheduledEvents"],
+                },
+            }
+        }),
         link: new HttpLink({
             uri: apiRoot,
             headers: {
@@ -52,13 +53,15 @@ let anonymousClient: ApolloClient | null = null;
 
 export const getClient = () => {
 
-    // check that we have a valid authentication token, if not redirect to login page
-    if (!checkToken()) {
-        if (client) {
-            client.clearStore();
-            client = null;
+    if (import.meta.env.DEV) {
+        // check that we have a valid authentication token, if not redirect to login page
+        if (!checkToken()) {
+            if (client) {
+                client.clearStore();
+                client = null;
+            }
+            throw redirect("/login");
         }
-        throw redirect("/login");
     }
 
     if (!client)
