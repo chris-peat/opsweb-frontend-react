@@ -10,6 +10,7 @@ import { gql, type TypedDocumentNode } from '@apollo/client';
 import { CREATE_GENERIC_REPORT, SELECT_GENERIC_REPORT_BY_PROJECT_TYPE_NUMBER, SELECT_GENERIC_REPORTS, USERS_IN_ROLE } from '~/graphQLQueries';
 import { useNavigate } from 'react-router';
 import type { IUser } from '~/models/user';
+import { toStringNoSeconds } from '~/utilities/time';
 
 interface IFormInput {
     notes: string
@@ -20,17 +21,17 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
     const { project, user } = useOpsWebContext();
 
     const readOnly = (number !== undefined && number > 0);
-    const [passNumber, setPassNumber] = useState<number>(7);
-    const [station, setStation] = useState<string>("WHM");
-    const [aos, setAos] = useState<string>("2026-07-19 12:34");
-    const [los, setLos] = useState<string>("2026-07-19 12:44");
-    const [scsw, setScsw] = useState<string>("246");
-    const [satMode, setSatMode] = useState<string>("SM");
-    const [acsMode, setAcsMode] = useState<string>("IM-TST");
-    const [dmb1, setDmb1] = useState<string>("Master");
+    const [passNumber, setPassNumber] = useState<number>();
+    const [station, setStation] = useState<string>();
+    const [aos, setAos] = useState<string>();
+    const [los, setLos] = useState<string>();
+    const [scsw, setScsw] = useState<string>();
+    const [satMode, setSatMode] = useState<string>();
+    const [acsMode, setAcsMode] = useState<string>();
+    const [dmb1, setDmb1] = useState<string>();
     const [ris, setRis] = useState<string>("");
     const [stdFiles, setStdFiles] = useState<string>("");
-    const [dmb2, setDmb2] = useState<string>("Backup");
+    const [dmb2, setDmb2] = useState<string>();
     const [otherFiles, setOtherFiles] = useState<string>("");
     const [spare, setSpare] = useState<string>("");
     const [warnings, setWarnings] = useState<string>("");
@@ -40,6 +41,50 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
     const [obeh, setObeh] = useState<string>("");
 
     let navigate = useNavigate();
+
+    useEffect(() => {
+        let apolloClient = getClient();
+        apolloClient.query({
+            query: SELECT_GENERIC_REPORT_BY_PROJECT_TYPE_NUMBER,
+            variables: {
+                projectId: project,
+                type: "PL",
+                number: number
+            }
+        })
+            .then((data) => {
+                if (!data.data?.project?.genericReport) {
+                    return;
+                }
+
+                let report = data.data.project.genericReport;
+                let detail: any = null;
+                try {
+                    detail = JSON.parse(report.detail);
+                } catch (error) {
+                    //console.error("Error parsing report detail:", error);
+                }
+                setPassNumber(detail.passNumber);
+                setStation(detail.station);
+                setAos(detail.aos);
+                setLos(detail.los);
+                setScsw(detail.scsw);
+                setSatMode(detail.satMode);
+                setAcsMode(detail.acsMode);
+                setDmb1(detail.dmb1);
+                setDmb2(detail.dmb2);
+                setRis(detail.ris);
+                setStdFiles(detail.stdFiles);
+                setOtherFiles(detail.otherFiles);
+                setSpare(detail.spare);
+                setWarnings(detail.warnings);
+                setAlarms(detail.alarms);
+                setConCheck(detail.conCheck);
+                setComments(detail.comments);
+                setObeh(detail.obeh);
+            })
+            .catch((error) => console.error(error));
+    }, [number]);
 
     async function submit(formData: FormData) {
         let report: any = {
@@ -59,7 +104,7 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
             }
         });
 
-        //navigate(`../shift-handover-logs`);
+        navigate(`../pass-logs`);
     }
 
     const titleClasses = "bg-gray-200 items-left align-middle px-2 pt-4 text-base";
@@ -70,10 +115,11 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
     const listboxClasses = "group flex gap-2 bg-white data-focus:bg-blue-100 w-48 px-2";
     const listboxButtonClasses = "relative block w-full bg-white pr-8 pl-3 text-left text-sm/6 text-black"
 
-    // let operatorListItems = operators.map(o => <ListboxOption className={listboxClasses} key={o.id} value={o}>{o.name}</ListboxOption>);
+    const title = readOnly ? "Closed Pass Log (read only)" : "New Pass Log";
 
     return (
         <form action={submit}>
+            <div className="text-2xl mb-4">{title}</div>
             <div className="grid justify-start" >
                 <div className={'col-span-2 border-t border-l ' + titleClasses}>
                     Operator:
@@ -104,11 +150,20 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
                 <div className={`col-4 border-r ` + titleClasses}>
                     SCSW Boot Counter:
                 </div>
-                <div className={`col-1 border-l px-1 bg-gray-200`}>
-                    <Input type="text" className={inputClasses} value={aos} onChange={(e) => setAos(e.target.value)} required disabled={readOnly} />
+                <div className={`col-1 border-l px-1 bg-gray-200 flex`}>
+                    <Input type="text" className={"px-2 text-base font-medium leading-6 text-black bg-white border border-gray-400 focus:outline-none focus:ring-0 focus:border-blue-700 min-h-full"} 
+                        value={aos} onChange={(e) => setAos(e.target.value)} required disabled={readOnly} />
+                    <Button className={`${project}-primary items-center justify-center px-2 py-1 text-sm text-base font-medium leading-6 whitespace-no-wrap border border-blue-700 rounded-md shadow-sm hover:cursor-pointer hover:brightness-90 focus:outline-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50`}
+                        onClick={() => setAos(toStringNoSeconds(new Date()))} title="Set AOS to the current time" disabled={readOnly}>
+                        &lt;- Now
+                    </Button>
                 </div>
-                <div className={`col-2 px-1 bg-gray-200`}>
-                    <Input type="text" className={inputClasses} value={los} onChange={(e) => setLos(e.target.value)} required disabled={readOnly} />
+                <div className={`col-2 px-1 bg-gray-200 flex`}>
+                    <Input type="text" className={"px-2 text-base font-medium leading-6 text-black bg-white border border-gray-400 focus:outline-none focus:ring-0 focus:border-blue-700 min-h-full"} value={los} onChange={(e) => setLos(e.target.value)} required disabled={readOnly} />
+                    <Button className={`${project}-primary items-center justify-center px-2 py-1 text-sm text-base font-medium leading-6 whitespace-no-wrap border border-blue-700 rounded-md shadow-sm hover:cursor-pointer hover:brightness-90 focus:outline-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50`}
+                        onClick={() => setLos(toStringNoSeconds(new Date()))} title="Set LOS to the current time" disabled={readOnly}>
+                        &lt;- Now
+                    </Button>
                 </div>
                 <div className={'col-3 ' + grayClasses}>
                 </div>
