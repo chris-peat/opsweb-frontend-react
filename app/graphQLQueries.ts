@@ -81,3 +81,32 @@ export const CREATE_GENERIC_REPORT: TypedDocumentNode<
     }
 }
 `;
+
+export const UPDATE_GENERIC_REPORT: TypedDocumentNode<
+  { updateGenericReport: { 
+    status: { 
+      succeeded: boolean, 
+      code: number, 
+      message: string, 
+      count: number},
+    report: any
+   } }
+> = gql`
+  mutation UpdateGenericReport($input: GenericReportInput!) {
+    updateGenericReport(input: $input) {
+        status {
+            succeeded
+            code
+            message
+            count
+        }
+        report {
+            projectId
+            type
+            number
+            overview
+            detail
+        }
+    }
+}
+`;

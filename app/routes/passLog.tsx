@@ -1,3 +1,4 @@
+import { useParams } from "react-router";
 import PassLogSER from "~/components/passLogs/passLogSER";
 
 export const handle = {
@@ -13,11 +14,11 @@ export const handle = {
   ]
 };
 
-export default function ShiftHandoverLog() {
-
+export default function PassLog() {
+  const params = useParams()
   return (
     <div className="flex items-center justify-center py-4">
-      <PassLogSER number={0} />
+      <PassLogSER number={params.number ? parseInt(params.number.replace(":", "")) : 0} />
     </div>
   );
 }

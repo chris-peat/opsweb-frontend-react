@@ -17,5 +17,6 @@ export default [
     route("shift-handover-logs/:number", "./routes/shiftHandoverLog.tsx"),
     route("pass-logs", "./routes/passLogs.tsx"),
     route("pass-logs/:number", "./routes/passLog.tsx"),
+    route("post-pass-briefings/:number", "./routes/postPassBriefing.tsx"),
   ]),
 ] satisfies RouteConfig;

@@ -248,7 +248,7 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                 <div className={`col-2 row-3 flex`}>
                     <Input type="text" className="px-2 text-base font-medium leading-6 text-black bg-white border border-gray-400 focus:outline-none focus:ring-0 focus:border-blue-700 min-h-full" value={shiftEnd} onChange={(e) => setShiftEnd(e.target.value)} name="shiftEnd" required disabled={readOnly} />
                     <Button className={`${project}-primary items-center justify-center px-2 py-1 text-sm text-base font-medium leading-6 whitespace-no-wrap border border-blue-700 rounded-md shadow-sm hover:cursor-pointer hover:brightness-90 focus:outline-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50`}
-                        onClick={() => setShiftEnd(toStringNoSeconds(new Date()))} title="Set shift end to the current time" >
+                        onClick={() => setShiftEnd(toStringNoSeconds(new Date()))} title="Set shift end to the current time"  disabled={readOnly}>
                         &lt;- Now
                     </Button>
                 </div>

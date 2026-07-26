@@ -19,6 +19,9 @@ export default function ProjectHome({ menuGroups }: { menuGroups: INavMenuGroup[
         <div>
           <NavLink to="shift-handover-logs">Shift Handover Logs</NavLink>
         </div>
+        <div>
+          <NavLink to="pass-logs">Pass Logs</NavLink>
+        </div>
       </div>
       {/* {menuGroups.map((group) => (
         <div key={group.title}>

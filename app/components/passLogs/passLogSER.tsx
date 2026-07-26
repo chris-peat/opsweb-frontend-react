@@ -7,7 +7,7 @@ import type { IGenericReport } from '~/models/genericReport';
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { getClient } from '~/apollo';
 import { gql, type TypedDocumentNode } from '@apollo/client';
-import { CREATE_GENERIC_REPORT, SELECT_GENERIC_REPORT_BY_PROJECT_TYPE_NUMBER, SELECT_GENERIC_REPORTS, USERS_IN_ROLE } from '~/graphQLQueries';
+import { CREATE_GENERIC_REPORT, SELECT_GENERIC_REPORT_BY_PROJECT_TYPE_NUMBER, SELECT_GENERIC_REPORTS, UPDATE_GENERIC_REPORT, USERS_IN_ROLE } from '~/graphQLQueries';
 import { useNavigate } from 'react-router';
 import type { IUser } from '~/models/user';
 import { toStringNoSeconds } from '~/utilities/time';
@@ -20,7 +20,7 @@ interface IFormInput {
 export default function PassLogSER({ number }: { number: number | undefined }) {
     const { project, user } = useOpsWebContext();
 
-    const readOnly = (number !== undefined && number > 0);
+    const isNew = !(number !== undefined && number > 0);
     const [passNumber, setPassNumber] = useState<number>();
     const [station, setStation] = useState<string>();
     const [aos, setAos] = useState<string>();
@@ -87,22 +87,38 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
     }, [number]);
 
     async function submit(formData: FormData) {
-        let report: any = {
+        let details: any = {
             passNumber, station, aos, los, scsw, satMode, acsMode, dmb1, dmb2,
             ris, stdFiles, otherFiles, spare, warnings, alarms, conCheck, comments, obeh
         };
 
         let apolloClient = getClient();
-        const { data } = await apolloClient.mutate({
-            mutation: CREATE_GENERIC_REPORT,
-            variables: {
-                input: {
-                    projectId: project,
-                    type: "PL",
-                    detail: JSON.stringify(report),
+
+        if (isNew) {
+            const { data } = await apolloClient.mutate({
+                mutation: CREATE_GENERIC_REPORT,
+                variables: {
+                    input: {
+                        projectId: project,
+                        type: "PL",
+                        detail: JSON.stringify(details),
+                    }
                 }
-            }
-        });
+            });
+        }
+        else {
+            const { data } = await apolloClient.mutate({
+                mutation: UPDATE_GENERIC_REPORT,
+                variables: {
+                    input: {
+                        projectId: project,
+                        type: "PL",
+                        number: number,
+                        detail: JSON.stringify(details),
+                    }
+                }
+            });
+        }
 
         navigate(`../pass-logs`);
     }
@@ -115,7 +131,7 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
     const listboxClasses = "group flex gap-2 bg-white data-focus:bg-blue-100 w-48 px-2";
     const listboxButtonClasses = "relative block w-full bg-white pr-8 pl-3 text-left text-sm/6 text-black"
 
-    const title = readOnly ? "Closed Pass Log (read only)" : "New Pass Log";
+    const title = isNew ? "Closed Pass Log (read only)" : "New Pass Log";
 
     return (
         <form action={submit}>
@@ -136,10 +152,10 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
                 <div className={grayClasses}>
                 </div>
                 <div className="col-3 px-1 bg-gray-200">
-                    <Input type="text" className={inputClasses} value={passNumber} onChange={(e) => setPassNumber(parseInt(e.target.value))} required disabled={readOnly} />
+                    <Input type="text" className={inputClasses} value={passNumber} onChange={(e) => setPassNumber(parseInt(e.target.value))} required />
                 </div>
                 <div className="col-4 border-r px-1 bg-gray-200">
-                    <Input type="text" className={inputClasses} value={station} onChange={(e) => setStation(e.target.value)} required disabled={readOnly} />
+                    <Input type="text" className={inputClasses} value={station} onChange={(e) => setStation(e.target.value)} required />
                 </div>
                 <div className={'col-1 border-l  ' + titleClasses}>
                     AOS:
@@ -151,24 +167,24 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
                     SCSW Boot Counter:
                 </div>
                 <div className={`col-1 border-l px-1 bg-gray-200 flex`}>
-                    <Input type="text" className={"px-2 text-base font-medium leading-6 text-black bg-white border border-gray-400 focus:outline-none focus:ring-0 focus:border-blue-700 min-h-full"} 
-                        value={aos} onChange={(e) => setAos(e.target.value)} required disabled={readOnly} />
+                    <Input type="text" className={"px-2 text-base font-medium leading-6 text-black bg-white border border-gray-400 focus:outline-none focus:ring-0 focus:border-blue-700 min-h-full"}
+                        value={aos} onChange={(e) => setAos(e.target.value)} required />
                     <Button className={`${project}-primary items-center justify-center px-2 py-1 text-sm text-base font-medium leading-6 whitespace-no-wrap border border-blue-700 rounded-md shadow-sm hover:cursor-pointer hover:brightness-90 focus:outline-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50`}
-                        onClick={() => setAos(toStringNoSeconds(new Date()))} title="Set AOS to the current time" disabled={readOnly}>
+                        onClick={() => setAos(toStringNoSeconds(new Date()))} title="Set AOS to the current time" >
                         &lt;- Now
                     </Button>
                 </div>
                 <div className={`col-2 px-1 bg-gray-200 flex`}>
-                    <Input type="text" className={"px-2 text-base font-medium leading-6 text-black bg-white border border-gray-400 focus:outline-none focus:ring-0 focus:border-blue-700 min-h-full"} value={los} onChange={(e) => setLos(e.target.value)} required disabled={readOnly} />
+                    <Input type="text" className={"px-2 text-base font-medium leading-6 text-black bg-white border border-gray-400 focus:outline-none focus:ring-0 focus:border-blue-700 min-h-full"} value={los} onChange={(e) => setLos(e.target.value)} required disabled={isNew} />
                     <Button className={`${project}-primary items-center justify-center px-2 py-1 text-sm text-base font-medium leading-6 whitespace-no-wrap border border-blue-700 rounded-md shadow-sm hover:cursor-pointer hover:brightness-90 focus:outline-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50`}
-                        onClick={() => setLos(toStringNoSeconds(new Date()))} title="Set LOS to the current time" disabled={readOnly}>
+                        onClick={() => setLos(toStringNoSeconds(new Date()))} title="Set LOS to the current time" >
                         &lt;- Now
                     </Button>
                 </div>
                 <div className={'col-3 ' + grayClasses}>
                 </div>
                 <div className={`col-4 border-r px-1 bg-gray-200`}>
-                    <Input type="text" className={inputClasses} value={scsw} onChange={(e) => setScsw(e.target.value)} required disabled={readOnly} />
+                    <Input type="text" className={inputClasses} value={scsw} onChange={(e) => setScsw(e.target.value)} required disabled={isNew} />
                 </div>
                 <div className={'col-1 border-l ' + titleClasses}>
                     Satellite Mode:
@@ -183,7 +199,7 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
                     DMB-2:
                 </div>
                 <div className={'col-1 w-full border-l px-1 bg-gray-200'}>
-                    <Listbox value={satMode} onChange={setSatMode} disabled={readOnly}>
+                    <Listbox value={satMode} onChange={setSatMode} disabled={isNew}>
                         <ListboxButton className={listboxButtonClasses}>
                             {satMode || "Select Satellite Mode"}
                             <ChevronDownIcon
@@ -200,7 +216,7 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
                     </Listbox>
                 </div>
                 <div className={'col-2 w-full px-1 bg-gray-200'}>
-                    <Listbox value={acsMode} onChange={setAcsMode} disabled={readOnly}>
+                    <Listbox value={acsMode} onChange={setAcsMode}>
                         <ListboxButton className={listboxButtonClasses}>
                             {acsMode || "Select AOCS Mode"}
                             <ChevronDownIcon
@@ -224,7 +240,7 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
                     </Listbox>
                 </div>
                 <div className={'col-3 w-full px-1 bg-gray-200'}>
-                    <Listbox value={dmb1} onChange={setDmb1} disabled={readOnly}>
+                    <Listbox value={dmb1} onChange={setDmb1}>
                         <ListboxButton className={listboxButtonClasses}>
                             {dmb1 || "Select DMB-1 State"}
                             <ChevronDownIcon
@@ -240,7 +256,7 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
                     </Listbox>
                 </div>
                 <div className={'col-4 w-full border-r px-1 bg-gray-200'}>
-                    <Listbox value={dmb2} onChange={setDmb2} disabled={readOnly}>
+                    <Listbox value={dmb2} onChange={setDmb2}>
                         <ListboxButton className={listboxButtonClasses}>
                             {dmb2 || "Select DMB-2 State"}
                             <ChevronDownIcon
@@ -263,17 +279,17 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
                 </div>
                 <div className={'col-1 col-span-2 h-20 border-l px-1 bg-gray-200 flex items-center'}>
                     <div className="w-3/4 h-full">
-                        <Textarea value={ris} onChange={(e) => setRis(e.target.value)} className={textareaClasses} disabled={readOnly} />
+                        <Textarea value={ris} onChange={(e) => setRis(e.target.value)} className={textareaClasses} />
                     </div>
-                    <Button className={`mx-2 ` + buttonClasses} onClick={() => setRis("None")} disabled={readOnly}>
+                    <Button className={`mx-2 ` + buttonClasses} onClick={() => setRis("None")}>
                         &lt;- None
                     </Button>
                 </div>
                 <div className={'col-3 col-span-2 h-20 border-r px-1 bg-gray-200 flex items-center'}>
                     <div className="w-3/4 h-full">
-                        <Textarea value={stdFiles} onChange={(e) => setStdFiles(e.target.value)} className={textareaClasses} disabled={readOnly} />
+                        <Textarea value={stdFiles} onChange={(e) => setStdFiles(e.target.value)} className={textareaClasses} />
                     </div>
-                    <Button className={`mx-2 ` + buttonClasses} onClick={() => setStdFiles("None")} disabled={readOnly}>
+                    <Button className={`mx-2 ` + buttonClasses} onClick={() => setStdFiles("None")}>
                         &lt;- None
                     </Button>
                 </div>
@@ -285,12 +301,12 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
                 </div>
                 <div className={'col-1 col-span-2 h-20 border-l px-1 bg-gray-200 flex items-center'}>
                     <div className="w-3/4 h-full">
-                        <Textarea value={otherFiles} onChange={(e) => setOtherFiles(e.target.value)} className={textareaClasses} disabled={readOnly} />
+                        <Textarea value={otherFiles} onChange={(e) => setOtherFiles(e.target.value)} className={textareaClasses} />
                     </div>
                 </div>
                 <div className={'col-3 col-span-2 h-20 border-r px-1 bg-gray-200 flex items-center'}>
                     <div className="w-3/4 h-full">
-                        <Textarea value={spare} onChange={(e) => setSpare(e.target.value)} className={textareaClasses} disabled={readOnly} />
+                        <Textarea value={spare} onChange={(e) => setSpare(e.target.value)} className={textareaClasses} />
                     </div>
                 </div>
                 <div className={'col-1 col-span-2 border-l ' + titleClasses}>
@@ -301,17 +317,17 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
                 </div>
                 <div className={'col-1 col-span-2 h-20 border-l px-1 bg-gray-200 flex items-center'}>
                     <div className="w-3/4 h-full">
-                        <Textarea value={warnings} onChange={(e) => setWarnings(e.target.value)} className={textareaClasses} disabled={readOnly} />
+                        <Textarea value={warnings} onChange={(e) => setWarnings(e.target.value)} className={textareaClasses} />
                     </div>
-                    <Button className={`mx-2 ` + buttonClasses} onClick={() => setWarnings("None")} disabled={readOnly}>
+                    <Button className={`mx-2 ` + buttonClasses} onClick={() => setWarnings("None")}>
                         &lt;- None
                     </Button>
                 </div>
                 <div className={'col-3 col-span-2 h-20 border-r px-1 bg-gray-200 flex items-center'}>
                     <div className="w-3/4 h-full">
-                        <Textarea value={alarms} onChange={(e) => setAlarms(e.target.value)} className={textareaClasses} disabled={readOnly} />
+                        <Textarea value={alarms} onChange={(e) => setAlarms(e.target.value)} className={textareaClasses} />
                     </div>
-                    <Button className={`mx-2 ` + buttonClasses} onClick={() => setAlarms("None")} disabled={readOnly}>
+                    <Button className={`mx-2 ` + buttonClasses} onClick={() => setAlarms("None")}>
                         &lt;- None
                     </Button>
                 </div>
@@ -323,15 +339,15 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
                 </div>
                 <div className={'col-1 col-span-2 h-20 border-l px-1 bg-gray-200 flex items-center'}>
                     <div className="w-3/4 h-full">
-                        <Textarea value={conCheck} onChange={(e) => setConCheck(e.target.value)} className={textareaClasses} disabled={readOnly} />
+                        <Textarea value={conCheck} onChange={(e) => setConCheck(e.target.value)} className={textareaClasses} />
                     </div>
-                    <Button className={`mx-2 ` + buttonClasses} onClick={() => setConCheck("None")} disabled={readOnly}>
+                    <Button className={`mx-2 ` + buttonClasses} onClick={() => setConCheck("None")}>
                         &lt;- None
                     </Button>
                 </div>
                 <div className={'col-3 col-span-2 h-20 border-r px-1 bg-gray-200 flex items-center'}>
                     <div className="w-3/4 h-full">
-                        <Textarea value={comments} onChange={(e) => setComments(e.target.value)} className={textareaClasses} disabled={readOnly} />
+                        <Textarea value={comments} onChange={(e) => setComments(e.target.value)} className={textareaClasses} />
                     </div>
                 </div>
                 <div className={'col-1 col-span-4 border-l border-r ' + titleClasses}>
@@ -339,15 +355,15 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
                 </div>
                 <div className={'col-1 col-span-4 h-20 border-l border-r px-1 bg-gray-200 flex items-center'}>
                     <div className="w-7/8 h-full">
-                        <Textarea value={obeh} onChange={(e) => setObeh(e.target.value)} className={textareaClasses} disabled={readOnly} />
+                        <Textarea value={obeh} onChange={(e) => setObeh(e.target.value)} className={textareaClasses} />
                     </div>
-                    <Button className={`mx-2 ` + buttonClasses} onClick={() => setObeh("None")} disabled={readOnly}>
+                    <Button className={`mx-2 ` + buttonClasses} onClick={() => setObeh("None")}>
                         &lt;- None
                     </Button>
                 </div>
                 <div className={'col-1 py-4 col-span-4 justify-center flex border-l border-r border-b ' + titleClasses}>
-                    <Button type='submit' className={buttonClasses} disabled={readOnly}>
-                        Submit
+                    <Button type='submit' className={buttonClasses}>
+                        {isNew ? "Submit" : "Update"}
                     </Button>
                 </div>
             </div>
