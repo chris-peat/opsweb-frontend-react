@@ -8,11 +8,11 @@ export default function StringSelector({ name, value, options, required, onChang
     const [showError, setShowError] = useState(false);
 
     useEffect(() => {
-        setStr(str ?? '');
+        setStr(value ?? '');
         setShowError(false);
-    }, [str]);
+    }, [value]);
 
-    const selected = options.find(o => o === value) ?? options[0];
+    const selected = options.find(o => o === str) ?? options[0];
 
     function handleChange(newValue: string) {
         setShowError(false);
@@ -24,7 +24,7 @@ export default function StringSelector({ name, value, options, required, onChang
 
     return (
         <div className={width}>
-            <Listbox value={value} onChange={handleChange} disabled={disabled}>
+            <Listbox value={str} onChange={handleChange} disabled={disabled}>
                 <div className="relative mt-1">
                     <ListboxButton className={`w-full h-full cursor-pointer flex items-center px-1`}>
                         <span className='block truncate'>{str || "Select..."}</span>
@@ -54,7 +54,7 @@ export default function StringSelector({ name, value, options, required, onChang
             <input
                 type="text"
                 name={name}
-                value={value}
+                value={str}
                 required={required}
                 onChange={() => { }}
                 tabIndex={-1}

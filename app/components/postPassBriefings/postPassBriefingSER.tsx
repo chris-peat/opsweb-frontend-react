@@ -1,27 +1,17 @@
 import { useEffect, useState } from 'react'
 import { Button, Checkbox, Input, Textarea, Listbox, ListboxButton, ListboxOptions, ListboxOption, Select } from '@headlessui/react';
 import { useOpsWebContext } from '~/routes/layout';
-import { ChevronDownIcon } from '@heroicons/react/20/solid'
-import StatusColorSelector from '../statusColorSelector';
-import type { IGenericReport } from '~/models/genericReport';
-import { useForm, type SubmitHandler } from "react-hook-form";
 import { getClient } from '~/apollo';
-import { gql, type TypedDocumentNode } from '@apollo/client';
 import { CREATE_GENERIC_REPORT, SELECT_GENERIC_REPORT_BY_PROJECT_TYPE_NUMBER, SELECT_GENERIC_REPORTS, UPDATE_GENERIC_REPORT, USERS_IN_ROLE } from '~/graphQLQueries';
 import { useNavigate } from 'react-router';
 import type { IUser } from '~/models/user';
-import { toStringNoSeconds } from '~/utilities/time';
 import StringSelector from '../stringSelector';
 
-interface IFormInput {
-    notes: string
-    shift: string
-}
 
 export default function PostPassBriefingSER({ number }: { number: number | undefined }) {
     const { project, user } = useOpsWebContext();
-
     const isNew = !(number !== undefined && number > 0);
+
     const [scsw, setScsw] = useState<string>();
     const [satMode, setSatMode] = useState<string>();
     const [acsMode, setAcsMode] = useState<string>();
@@ -57,17 +47,55 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
     const [prop1, setProp1] = useState<string>();
     const [prop2, setProp2] = useState<string>();
     const [bootCnt, setBootCnt] = useState<string>();
-
-    const [ris, setRis] = useState<string>("");
-    const [stdFiles, setStdFiles] = useState<string>("");
+    const [lsc1, setLsc1] = useState<string>();
+    const [lsc2, setLsc2] = useState<string>();
+    const [ris, setRis] = useState<string>();
+    const [stdFiles, setStdFiles] = useState<string>();
     const [dmb2, setDmb2] = useState<string>();
-    const [otherFiles, setOtherFiles] = useState<string>("");
-    const [spare, setSpare] = useState<string>("");
-    const [warnings, setWarnings] = useState<string>("");
-    const [alarms, setAlarms] = useState<string>("");
-    const [conCheck, setConCheck] = useState<string>("");
-    const [comments, setComments] = useState<string>("");
-    const [obeh, setObeh] = useState<string>("");
+    const [otherFiles, setOtherFiles] = useState<string>();
+    const [spare, setSpare] = useState<string>();
+    const [warnings, setWarnings] = useState<string>();
+    const [alarms, setAlarms] = useState<string>();
+    const [conCheck, setConCheck] = useState<string>();
+    const [comments, setComments] = useState<string>();
+    const [obeh, setObeh] = useState<string>();
+    const [ssEnabled, setSsEnabled] = useState<string>();
+    const [mtlSched, setMtlSched] = useState<string>();
+    const [bgsObUntil, setBgsObUntil] = useState<string>();
+    const [lastDlData, setLastDlData] = useState<string>();
+    const [dumpIntegrity, setDumpIntegrity] = useState<string>();
+    const [authentication, setAuthentication] = useState<string>();
+    const [hsc1, setHsc1] = useState<string>();
+    const [hsc2, setHsc2] = useState<string>();
+    const [plStatus, setPlStatus] = useState<string>();
+    const [pdhu1, setPdhu1] = useState<string>();
+    const [pdhu2, setPdhu2] = useState<string>();
+    const [pdhu3, setPdhu3] = useState<string>();
+    const [sAtHome, setSAtHome] = useState<string>();
+    const [afd, setAfd] = useState<string>();
+    const [protos, setProtos] = useState<string>();
+    const [mops, setMops] = useState<string>();
+    const [kmf, setKmf] = useState<string>();
+    const [sgo, setSgo] = useState<string>();
+    const [mps, setMps] = useState<string>();
+    const [fds, setFds] = useState<string>();
+    const [odBasedOn, setOdBasedOn] = useState<string>();
+    const [aocsCont, setAocsCont] = useState<string>();
+    const [aocsComment, setAocsComment] = useState<string>();
+    const [aocsAct1, setAocsAct1] = useState<string>();
+    const [aocsAct2, setAocsAct2] = useState<string>();
+    const [tmtcCont, setTmtcCont] = useState<string>();
+    const [tmtcComment, setTmtcComment] = useState<string>();
+    const [tmtcAct1, setTmtcAct1] = useState<string>();
+    const [tmtcAct2, setTmtcAct2] = useState<string>();
+    const [ptsCont, setPtsCont] = useState<string>();
+    const [ptsComment, setPtsComment] = useState<string>();
+    const [ptsAct1, setPtsAct1] = useState<string>();
+    const [ptsAct2, setPtsAct2] = useState<string>();
+    const [grdCont, setGrdCont] = useState<string>();
+    const [grdComment, setGrdComment] = useState<string>();
+    const [grdAct1, setGrdAct1] = useState<string>();
+    const [grdAct2, setGrdAct2] = useState<string>();
 
     let navigate = useNavigate();
 
@@ -79,11 +107,14 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
         'IOC OMM_TRANS', 'IOC OMM_NOM'];
     const dmbValues = ['Master', 'Backup', 'Off'];
     const okNokValues = ['OK', 'NOK'];
+    const onOffNokValues = ['On', 'Off', 'NOK'];
     const offChecked = ['Off', 'Checked Out'];
     const hkRateValues = ['High', 'Low'];
+    const odValues = ['GPS', 'Tracking data'];
     const greenRed = ['Green', 'Red'];
     const obtModes = ['Autonomous', 'Synchronized'];
     const propModes = ['Off', 'Safe', 'Standby', 'Thermal Cond.', 'Thrust', 'Commissioning'];
+    const enabledDisabled = ['Enabled', 'Disabled'];
 
     useEffect(() => {
         let apolloClient = getClient();
@@ -107,28 +138,97 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                 } catch (error) {
                     //console.error("Error parsing report detail:", error);
                 }
-                setScsw(detail.scsw);
-                setSatMode(detail.satMode);
-                setAcsMode(detail.acsMode);
-                setDmb1(detail.dmb1);
-                setDmb2(detail.dmb2);
-                setRis(detail.ris);
-                setStdFiles(detail.stdFiles);
-                setOtherFiles(detail.otherFiles);
-                setSpare(detail.spare);
-                setWarnings(detail.warnings);
-                setAlarms(detail.alarms);
-                setConCheck(detail.conCheck);
-                setComments(detail.comments);
-                setObeh(detail.obeh);
+                setReportDetails(detail);
             })
             .catch((error) => console.error(error));
-    }, [number]);
+    }, [project, number]);
 
     async function submit(formData: FormData) {
         let details: any = {
-            scsw, satMode, acsMode, dmb1, dmb2,
-            ris, stdFiles, otherFiles, spare, warnings, alarms, conCheck, comments, obeh
+            scsw,
+            satMode,
+            acsMode,
+            gps1Mode,
+            gps2Mode,
+            obtMode,
+            dmb1,
+            geccos,
+            opsWeb,
+            satmon,
+            hkRate,
+            overallStatus,
+            soc,
+            busV,
+            str1,
+            str2,
+            suns1,
+            suns2,
+            suns3,
+            mgm1,
+            mgm2,
+            gyr1,
+            gyr2,
+            rwh1,
+            rwh2,
+            rwh3,
+            rwh4,
+            mtq1,
+            mtq2,
+            propMode,
+            tankTemp,
+            firing,
+            prop1,
+            prop2,
+            bootCnt,
+            lsc1,
+            lsc2,
+            ris,
+            stdFiles,
+            dmb2,
+            otherFiles,
+            spare,
+            warnings,
+            alarms,
+            conCheck,
+            comments,
+            obeh,
+            ssEnabled,
+            mtlSched,
+            bgsObUntil,
+            lastDlData,
+            dumpIntegrity,
+            authentication,
+            hsc1,
+            hsc2,
+            plStatus,
+            pdhu1,
+            pdhu2,
+            pdhu3,
+            sAtHome,
+            afd,
+            protos,
+            mops,
+            kmf,
+            sgo,
+            mps,
+            fds,
+            odBasedOn,
+            aocsCont,
+            aocsComment,
+            aocsAct1,
+            aocsAct2,
+            tmtcCont,
+            tmtcComment,
+            tmtcAct1,
+            tmtcAct2,
+            ptsCont,
+            ptsComment,
+            ptsAct1,
+            ptsAct2,
+            grdCont,
+            grdComment,
+            grdAct1,
+            grdAct2,
         };
 
         let apolloClient = getClient();
@@ -139,7 +239,7 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                 variables: {
                     input: {
                         projectId: project,
-                        type: "PL",
+                        type: "PPB",
                         detail: JSON.stringify(details),
                     }
                 }
@@ -151,7 +251,7 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                 variables: {
                     input: {
                         projectId: project,
-                        type: "PL",
+                        type: "PPB",
                         number: number,
                         detail: JSON.stringify(details),
                     }
@@ -159,24 +259,140 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
             });
         }
 
-        navigate(`../pass-logs`);
+        navigate(`../post-pass-briefings`);
     }
 
-    const titleClasses = project + "-primary text-center align-middle border-l border-t border-black px-2 py-2 text-xl";
+    function setReportDetails(detail: any) {
+        setScsw(detail.scsw);
+        setSatMode(detail.satMode);
+        setAcsMode(detail.acsMode);
+        setGps1Mode(detail.gps1Mode);
+        setGps2Mode(detail.gps2Mode);
+        setObtMode(detail.obtMode);
+        setDmb1(detail.dmb1);
+        setGeccos(detail.geccos);
+        setOpsWeb(detail.opsWeb);
+        setSatmon(detail.satmon);
+        setHkRate(detail.hkRate);
+        setOverallStatus(detail.overallStatus);
+        setSoc(detail.soc);
+        setBusV(detail.busV);
+        setStr1(detail.str1);
+        setStr2(detail.str2);
+        setSuns1(detail.suns1);
+        setSuns2(detail.suns2);
+        setSuns3(detail.suns3);
+        setMgm1(detail.mgm1);
+        setMgm2(detail.mgm2);
+        setGyr1(detail.gyr1);
+        setGyr2(detail.gyr2);
+        setRwh1(detail.rwh1);
+        setRwh2(detail.rwh2);
+        setRwh3(detail.rwh3);
+        setRwh4(detail.rwh4);
+        setMtq1(detail.mtq1);
+        setMtq2(detail.mtq2);
+        setPropMode(detail.propMode);
+        setTankTemp(detail.tankTemp);
+        setFiring(detail.firing);
+        setProp1(detail.prop1);
+        setProp2(detail.prop2);
+        setBootCnt(detail.bootCnt);
+        setLsc1(detail.lsc1);
+        setLsc2(detail.lsc2);
+        setRis(detail.ris);
+        setStdFiles(detail.stdFiles);
+        setDmb2(detail.dmb2);
+        setOtherFiles(detail.otherFiles);
+        setSpare(detail.spare);
+        setWarnings(detail.warnings);
+        setAlarms(detail.alarms);
+        setConCheck(detail.conCheck);
+        setComments(detail.comments);
+        setObeh(detail.obeh);
+        setSsEnabled(detail.ssEnabled);
+        setMtlSched(detail.mtlSched);
+        setBgsObUntil(detail.bgsObUntil);
+        setLastDlData(detail.lastDlData);
+        setDumpIntegrity(detail.dumpIntegrity);
+        setAuthentication(detail.authentication);
+        setHsc1(detail.hsc1);
+        setHsc2(detail.hsc2);
+        setPlStatus(detail.plStatus);
+        setPdhu1(detail.pdhu1);
+        setPdhu2(detail.pdhu2);
+        setPdhu3(detail.pdhu3);
+        setSAtHome(detail.sAtHome);
+        setAfd(detail.afd);
+        setProtos(detail.protos);
+        setMops(detail.mops);
+        setKmf(detail.kmf);
+        setSgo(detail.sgo);
+        setMps(detail.mps);
+        setFds(detail.fds);
+        setOdBasedOn(detail.odBasedOn);
+        setAocsCont(detail.aocsCont);
+        setAocsComment(detail.aocsComment);
+        setAocsAct1(detail.aocsAct1);
+        setAocsAct2(detail.aocsAct2);
+        setTmtcCont(detail.tmtcCont);
+        setTmtcComment(detail.tmtcComment);
+        setTmtcAct1(detail.tmtcAct1);
+        setTmtcAct2(detail.tmtcAct2);
+        setPtsCont(detail.ptsCont);
+        setPtsComment(detail.ptsComment);
+        setPtsAct1(detail.ptsAct1);
+        setPtsAct2(detail.ptsAct2);
+        setGrdCont(detail.grdCont);
+        setGrdComment(detail.grdComment);
+        setGrdAct1(detail.grdAct1);
+        setGrdAct2(detail.grdAct2);
+    }
+
+    async function handlePrefill() {
+
+        // fetch the existing shift handover log with the highest number
+        let apolloClient = getClient();
+        const { data } = await apolloClient.query({
+            query: SELECT_GENERIC_REPORTS,
+            variables: {
+                projectId: project,
+                input: {
+                    type: "PPB",
+                    paging: {
+                        skip: 0,
+                        take: 1
+                    },
+                }
+            }
+        });
+
+        if (data?.project.genericReports.total === 0) {
+            return;
+        }
+
+        const latestReport = data?.project.genericReports.reports[0];
+
+        try {
+            const detail = JSON.parse(latestReport.detail);
+            setReportDetails(detail);
+        }
+        catch (error) { }
+    }
+
+    const titleClasses = project + "-primary text-center align-middle border-l border-t border-black px-2 text-xl";
     const labelClasses = "items-center align-middle px-2 text-base bg-gray-200 border-l border-t";
     const containerClasses = "border-l border-t border-black";
-    const textareaClasses = "resize-none bg-white px-1 border border-gray-400 text-sm min-w-full min-h-full focus:outline-none focus:ring-0 focus:border-0";
+    const textareaClasses = "resize-none bg-white px-1 text-sm min-w-full min-h-full focus:outline-none focus:ring-0 focus:border-0";
     const inputClasses = "px-2 text-base font-medium leading-6 text-black bg-white focus:outline-none focus:ring-0 focus:border-blue-700 min-h-full " + inputWidth;
     const buttonClasses = project + "-primary items-center justify-center px-2 py-1 text-base font-medium leading-6 whitespace-no-wrap border border-blue-700 rounded-md shadow-sm hover:cursor-pointer hover:brightness-90 focus:outline-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50";
-    const listboxClasses = "group flex gap-2 bg-white data-focus:bg-blue-100 w-48 px-2";
-    const listboxButtonClasses = "relative block w-full bg-white pr-8 pl-3 text-left text-base text-black"
 
     const title = isNew ? "New Post Pass Briefing" : "Post Pass Briefing";
 
     return (
         <form action={submit}>
             <div className="text-2xl mb-4">{title}</div>
-            <div className="grid grid-flow-col grid-rows-[repeat(27,auto)] grid-cols-[repeat(8,auto)] justify-start" >
+            <div className="grid grid-flow-col grid-rows-[repeat(33,auto)] grid-cols-[repeat(8,auto)] justify-start" >
                 <div className={labelClasses}>
                     Sat. Mode
                 </div>
@@ -241,7 +457,33 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                     <div className='col-2 row-1 text-right'>1</div>
                     <div className='col-2 row-2 text-right'>2</div>
                 </div>
-                <div className={'py-4 col-span-8 justify-center flex'}>
+                <div className={`col-span-2 ` + labelClasses}>
+                    CONTINGENCY
+                </div>
+                <div className={'col-span-2 ' + containerClasses}>
+                    <Textarea value={aocsCont} onChange={(e) => setAocsCont(e.target.value)} className={textareaClasses} />
+                </div>
+                <div className={'grid row-span-2 ' + labelClasses}>
+                    <div className='col-1 row-1 row-span-2'>Next Planned<br />Activities</div>
+                    <div className='col-2 row-1 text-right'>1</div>
+                    <div className='col-2 row-2 text-right'>2</div>
+                </div>
+                <div className={'col-span-2 ' + labelClasses}>
+                    COMMENT
+                </div>
+                <div className={'col-span-2 border-b h-15 ' + containerClasses}>
+                    <Textarea value={aocsComment} onChange={(e) => setAocsComment(e.target.value)} className={textareaClasses} />
+                </div>
+
+                <div className={'py-4 col-span-8 justify-center flex gap-20 justify-center'}>
+                    {
+                        (isNew) ?
+                            <Button className={buttonClasses} onClick={handlePrefill}
+                                title="Pre-fill fields with values from last briefing">
+                                Prefill
+                            </Button>
+                            : ""
+                    }
                     <Button type='submit' className={buttonClasses}>
                         {isNew ? "Submit" : "Update"}
                     </Button>
@@ -252,7 +494,7 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                     <StringSelector options={satModes} value={satMode} onChange={setSatMode} required={true} />
                 </div>
                 <div className={'border-r ' + containerClasses}>
-                    <StringSelector options={hkRateValues} value={hkRate} onChange={setHkRate} required={false} />
+                    <StringSelector options={hkRateValues} value={hkRate} onChange={setHkRate} required={true} />
                 </div>
                 <div className={containerClasses}>
                     <StringSelector options={aocsModes} value={acsMode} onChange={setAcsMode} required={true} />
@@ -323,13 +565,19 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                 <div className={containerClasses}>
                     <StringSelector options={offChecked} value={prop2} onChange={setProp2} required={false} />
                 </div>
+                <div className={'h-15 ' + containerClasses}>
+                    <Textarea value={aocsAct1} onChange={(e) => setAocsAct1(e.target.value)} className={textareaClasses} />
+                </div>
+                <div className={'h-15 ' + containerClasses}>
+                    <Textarea value={aocsAct2} onChange={(e) => setAocsAct2(e.target.value)} className={textareaClasses} />
+                </div>
 
 
                 {/* Column 3 */}
-                <div className={`col-start-[3] col-span-2 row-span-2 ${inputWidth}`}>
+                <div className={'col-start-[3] col-span-2 row-span-2'}>
                     &nbsp;
                 </div>
-                <div className={'col-span-2 ' + titleClasses}>
+                <div className={`col-span-2  ${titleClasses}`}>
                     TMTC
                 </div>
                 <div className={'row-span-2 grid ' + labelClasses}>
@@ -348,7 +596,7 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                     <div className='col-2 row-1 text-right'>1</div>
                     <div className='col-2 row-2 text-right'>2</div>
                 </div>
-                <div className={'col-span-2' + labelClasses}>
+                <div className={'col-span-2 ' + labelClasses}>
                     &nbsp;
                 </div>
                 <div className={labelClasses}>
@@ -386,12 +634,26 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                 <div className={'col-span-2 row-span-5 ' + labelClasses}>
                     &nbsp;
                 </div>
+                <div className={`col-span-2 ` + labelClasses}>
+                    CONTINGENCY
+                </div>
+                <div className={'col-span-2 ' + containerClasses}>
+                    <Textarea value={tmtcCont} onChange={(e) => setTmtcCont(e.target.value)} className={textareaClasses} />
+                </div>
+                <div className={'grid row-span-2 ' + labelClasses}>
+                    <div className='col-1 row-1 row-span-2'>Next Planned<br />Activities</div>
+                    <div className='col-2 row-1 text-right'>1</div>
+                    <div className='col-2 row-2 text-right'>2</div>
+                </div>
+                <div className={'col-span-2 ' + labelClasses}>
+                    COMMENT
+                </div>
+                <div className={'col-span-2 border-b h-15 ' + containerClasses}>
+                    <Textarea value={tmtcComment} onChange={(e) => setTmtcComment(e.target.value)} className={textareaClasses} />
+                </div>
 
                 {/* Column 4 */}
-                <div className={`col-start-[4] col-span-2 row-span-2 ${inputWidth}`}>
-                    &nbsp;
-                </div>
-                <div className={containerClasses}>
+                <div className={`col-start-[4] row-4 ${containerClasses} ${inputWidth}`}>
                     <StringSelector options={dmbValues} value={dmb1} onChange={setDmb1} required={false} />
                 </div>
                 <div className={containerClasses}>
@@ -403,10 +665,45 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                 <div className={containerClasses}>
                     <Input type="text" className={inputClasses} value={bootCnt} onChange={(e) => setBootCnt(e.target.value)} />
                 </div>
-
+                <div className={containerClasses}>
+                    <Input type="text" className={inputClasses} value={lsc1} onChange={(e) => setLsc1(e.target.value)} />
+                </div>
+                <div className={containerClasses}>
+                    <Input type="text" className={inputClasses} value={lsc2} onChange={(e) => setLsc2(e.target.value)} />
+                </div>
+                <div className={containerClasses}>
+                    <Input type="text" className={inputClasses} value={mtlSched} onChange={(e) => setMtlSched(e.target.value)} />
+                </div>
+                <div className={containerClasses}>
+                    <StringSelector options={enabledDisabled} value={ssEnabled} onChange={setSsEnabled} required={false} />
+                </div>
+                <div className={containerClasses}>
+                    <Input type="text" className={inputClasses} value={bgsObUntil} onChange={(e) => setBgsObUntil(e.target.value)} />
+                </div>
+                <div className={containerClasses}>
+                    <Input type="text" className={inputClasses} value={lastDlData} onChange={(e) => setLastDlData(e.target.value)} />
+                </div>
+                <div className={containerClasses}>
+                    <Input type="text" className={inputClasses} value={dumpIntegrity} onChange={(e) => setDumpIntegrity(e.target.value)} />
+                </div>
+                <div className={containerClasses}>
+                    <Input type="text" className={inputClasses} value={authentication} onChange={(e) => setAuthentication(e.target.value)} />
+                </div>
+                <div className={containerClasses}>
+                    <Input type="text" className={inputClasses} value={hsc1} onChange={(e) => setHsc1(e.target.value)} />
+                </div>
+                <div className={containerClasses}>
+                    <Input type="text" className={inputClasses} value={hsc2} onChange={(e) => setHsc2(e.target.value)} />
+                </div>
+                <div className={'h-15 ' + containerClasses}>
+                    <Textarea value={tmtcAct1} onChange={(e) => setTmtcAct1(e.target.value)} className={textareaClasses} />
+                </div>
+                <div className={'h-15 ' + containerClasses}>
+                    <Textarea value={tmtcAct2} onChange={(e) => setTmtcAct2(e.target.value)} className={textareaClasses} />
+                </div>
 
                 {/* Column 5 */}
-                <div className={`col-start-[5] col-span-2 row-span-2 ${inputWidth}`}>
+                <div className={'col-start-[5] col-span-2 row-span-2'}>
                     &nbsp;
                 </div>
                 <div className={`col-span-2 ` + titleClasses}>
@@ -421,13 +718,44 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                 <div className={labelClasses}>
                     Bus Voltage [V]
                 </div>
-
-
-                {/* Column 6 */}
-                <div className={`col-start-[6] col-span-2 row-span-2 ${inputWidth}`}>
+                <div className={`col-span-2 row-span-2 ` + labelClasses}>
                     &nbsp;
                 </div>
-                <div className={`${containerClasses} ${inputWidth}`}>
+                <div className={`col-span-2 ` + titleClasses}>
+                    P/L
+                </div>
+                <div className={'row-span-3 ' + labelClasses}>
+                    Status
+                </div>
+                <div className={'row-span-3 grid ' + labelClasses}>
+                    <div className='col-1 row-1 row-span-3'>PDHU</div>
+                    <div className='col-2 row-1 text-right'>1</div>
+                    <div className='col-2 row-2 text-right'>2</div>
+                    <div className='col-2 row-3 text-right'>3</div>
+                </div>
+                <div className={`col-span-2 row-span-11 ` + labelClasses}>
+                    &nbsp;
+                </div>
+                <div className={`col-span-2 ` + labelClasses}>
+                    CONTINGENCY
+                </div>
+                <div className={'col-span-2 ' + containerClasses}>
+                    <Textarea value={ptsCont} onChange={(e) => setPtsCont(e.target.value)} className={textareaClasses} />
+                </div>
+                <div className={'grid row-span-2 ' + labelClasses}>
+                    <div className='col-1 row-1 row-span-2'>Next Planned<br />Activities</div>
+                    <div className='col-2 row-1 text-right'>1</div>
+                    <div className='col-2 row-2 text-right'>2</div>
+                </div>
+                <div className={'col-span-2 ' + labelClasses}>
+                    COMMENT
+                </div>
+                <div className={'col-span-2 border-b h-15 ' + containerClasses}>
+                    <Textarea value={ptsComment} onChange={(e) => setPtsComment(e.target.value)} className={textareaClasses} />
+                </div>
+
+                {/* Column 6 */}
+                <div className={`col-start-[6] row-4 ${containerClasses} ${inputWidth}`}>
                     <StringSelector options={greenRed} value={overallStatus} onChange={setOverallStatus} required={true} />
                 </div>
                 <div className={containerClasses}>
@@ -436,9 +764,28 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                 <div className={containerClasses}>
                     <Input type="text" className={inputClasses} value={busV} onChange={(e) => setBusV(e.target.value)} />
                 </div>
+                <div className={'row-span-3 ' + containerClasses}>
+                    <Textarea value={plStatus} onChange={(e) => setPlStatus(e.target.value)} className={textareaClasses} />
+                </div>
+                <div className={containerClasses}>
+                    <StringSelector options={onOffNokValues} value={pdhu1} onChange={setPdhu1} required={false} />
+                </div>
+                <div className={containerClasses}>
+                    <StringSelector options={onOffNokValues} value={pdhu2} onChange={setPdhu2} required={false} />
+                </div>
+                <div className={containerClasses}>
+                    <StringSelector options={onOffNokValues} value={pdhu3} onChange={setPdhu3} required={false} />
+                </div>
+                <div className={'h-15 ' + containerClasses}>
+                    <Textarea value={ptsAct1} onChange={(e) => setPtsAct1(e.target.value)} className={textareaClasses} />
+                </div>
+                <div className={'h-15 ' + containerClasses}>
+                    <Textarea value={ptsAct2} onChange={(e) => setPtsAct2(e.target.value)} className={textareaClasses} />
+                </div>
+
 
                 {/* Column 7 */}
-                <div className={`col-start-[7] col-span-2 row-span-2 ${inputWidth}`}>
+                <div className={'col-start-[7] col-span-2 row-span-2'}>
                     &nbsp;
                 </div>
                 <div className={'col-span-2 border-r ' + titleClasses}>
@@ -453,11 +800,67 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                 <div className={labelClasses}>
                     Satmon
                 </div>
-
-                {/* Column 8 */}
-                <div className={`col-start-[8] col-span-2 row-span-2 ${inputWidth}`}>
+                <div className={labelClasses}>
+                    S@Home
+                </div>
+                <div className={labelClasses}>
+                    AFD
+                </div>
+                <div className={labelClasses}>
+                    ProToS
+                </div>
+                <div className={labelClasses}>
+                    MOPS
+                </div>
+                <div className={`col-span-2 border-r ` + labelClasses}>
                     &nbsp;
                 </div>
+                <div className={labelClasses}>
+                    KMF
+                </div>
+                <div className={`col-span-2 border-r ` + labelClasses}>
+                    &nbsp;
+                </div>
+                <div className={labelClasses}>
+                    SGO
+                </div>
+                <div className={`col-span-2 border-r ` + labelClasses}>
+                    &nbsp;
+                </div>
+                <div className={labelClasses}>
+                    MPS
+                </div>
+                <div className={`col-span-2 border-r ` + labelClasses}>
+                    &nbsp;
+                </div>
+                <div className={labelClasses}>
+                    FDS
+                </div>
+                <div className={labelClasses}>
+                    OD based on
+                </div>
+                <div className={`col-span-2 row-span-7 border-r ` + labelClasses}>
+                    &nbsp;
+                </div>
+                <div className={'col-span-2 border-r ' + labelClasses}>
+                    CONTINGENCY
+                </div>
+                <div className={'col-span-2 border-r ' + containerClasses}>
+                    <Textarea value={grdCont} onChange={(e) => setGrdCont(e.target.value)} className={textareaClasses} />
+                </div>
+                <div className={'grid row-span-2 ' + labelClasses}>
+                    <div className='col-1 row-1 row-span-2'>Next Planned<br />Activities</div>
+                    <div className='col-2 row-1 text-right'>1</div>
+                    <div className='col-2 row-2 text-right'>2</div>
+                </div>
+                <div className={'col-span-2 border-r ' + labelClasses}>
+                    COMMENT
+                </div>
+                <div className={'col-span-2 border-b border-r h-15 ' + containerClasses}>
+                    <Textarea value={grdComment} onChange={(e) => setGrdComment(e.target.value)} className={textareaClasses} />
+                </div>
+
+                {/* Column 8 */}
                 <div className={`border-r ${containerClasses} ${inputWidth}`}>
                     <StringSelector options={okNokValues} value={geccos} onChange={setGeccos} required={false} />
                 </div>
@@ -467,6 +870,42 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                 <div className={'border-r ' + containerClasses}>
                     <StringSelector options={okNokValues} value={satmon} onChange={setSatmon} required={false} />
                 </div>
+                <div className={'border-r ' + containerClasses}>
+                    <StringSelector options={okNokValues} value={sAtHome} onChange={setSAtHome} required={false} />
+                </div>
+                <div className={'border-r ' + containerClasses}>
+                    <StringSelector options={okNokValues} value={afd} onChange={setAfd} required={false} />
+                </div>
+                <div className={'border-r ' + containerClasses}>
+                    <StringSelector options={okNokValues} value={protos} onChange={setProtos} required={false} />
+                </div>
+                <div className={'border-r ' + containerClasses}>
+                    <StringSelector options={okNokValues} value={mops} onChange={setMops} required={false} />
+                </div>
+                <div className={'border-r ' + containerClasses}>
+                    <StringSelector options={okNokValues} value={kmf} onChange={setKmf} required={false} />
+                </div>
+                <div className={'border-r ' + containerClasses}>
+                    <StringSelector options={okNokValues} value={sgo} onChange={setSgo} required={false} />
+                </div>
+                <div className={'border-r ' + containerClasses}>
+                    <StringSelector options={okNokValues} value={mps} onChange={setMps} required={false} />
+                </div>
+                <div className={'border-r ' + containerClasses}>
+                    <StringSelector options={okNokValues} value={fds} onChange={setFds} required={false} />
+                </div>
+                <div className={'border-r ' + containerClasses}>
+                    <StringSelector options={odValues} value={odBasedOn} onChange={setOdBasedOn} required={false} />
+                </div>
+                <div className={'h-15 border-r ' + containerClasses}>
+                    <Textarea value={grdAct1} onChange={(e) => setGrdAct1(e.target.value)} className={textareaClasses} />
+                </div>
+                <div className={'h-15 border-r ' + containerClasses}>
+                    <Textarea value={grdAct2} onChange={(e) => setGrdAct2(e.target.value)} className={textareaClasses} />
+                </div>
+
+
+
 
 
             </div>
