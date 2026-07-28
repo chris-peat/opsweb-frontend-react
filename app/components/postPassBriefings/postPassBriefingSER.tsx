@@ -96,20 +96,24 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
     const [grdComment, setGrdComment] = useState<string>();
     const [grdAct1, setGrdAct1] = useState<string>();
     const [grdAct2, setGrdAct2] = useState<string>();
+    const [briefedBy, setBriefedBy] = useState<string>();
+    const [briefingTime, setBriefingTime] = useState<any>(null);
+    const [aos, setAos] = useState<string>();
+    const [los, setLos] = useState<string>();
+    const [station, setStation] = useState<string>();
 
     let navigate = useNavigate();
 
     const inputWidth = "w-50";
 
     const satModes = ['SM', 'SBM', 'OPM', 'OMM'];
-    const aocsModes = ['SM', 'SBM', 'OPM', 'OMM', 'IOC SM_TRANS', 'IOC SM_NOM',
-        'IOC SBM_TRANS', 'IOC SBM_NOM', 'IOC OPM_TRANS', 'IOC OPM_NOM',
-        'IOC OMM_TRANS', 'IOC OMM_NOM'];
+    const aocsModes = ['IM-TST', 'IM-INI', 'SM-SS', 'CPM-SP', 'CPM-EP', 'CPM-TR',
+        'FPM-EP', 'FPM-IP', 'FPM-TR', 'FPM-LD', 'OCM-VP'];
     const dmbValues = ['Master', 'Backup', 'Off'];
     const okNokValues = ['OK', 'NOK'];
     const onOffNokValues = ['On', 'Off', 'NOK'];
     const offChecked = ['Off', 'Checked Out'];
-    const hkRateValues = ['High', 'Low'];
+    const hkRateValues = ['LEOP', 'SM', 'SBM', 'OPM', 'OMM', 'IOC SM_TRANS', 'IOC SM_NOM', 'IOC SBM_TRANS', 'IOC SBM_NOM', 'IOC OPM_TRANS'];
     const odValues = ['GPS', 'Tracking data'];
     const greenRed = ['Green', 'Red'];
     const obtModes = ['Autonomous', 'Synchronized'];
@@ -229,6 +233,11 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
             grdComment,
             grdAct1,
             grdAct2,
+            briefedBy,
+            briefingTime,
+            aos,
+            los,
+            station
         };
 
         let apolloClient = getClient();
@@ -347,6 +356,11 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
         setGrdComment(detail.grdComment);
         setGrdAct1(detail.grdAct1);
         setGrdAct2(detail.grdAct2);
+        setBriefedBy(detail.briefedBy);
+        setBriefingTime(detail.briefingTime);
+        setAos(detail.aos);
+        setLos(detail.los);
+        setStation(detail.station);
     }
 
     async function handlePrefill() {
@@ -389,10 +403,19 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
 
     const title = isNew ? "New Post Pass Briefing" : "Post Pass Briefing";
 
+    function nextActivitiesDiv() {
+        return (<div className={'grid row-span-2 items-center align-middle text-base bg-gray-200 border-l border-t'}>
+            <div className='col-1 row-1 row-span-2 h-full px-2 border-r flex items-center'>Planned<br />Activities</div>
+            <div className='col-2 row-1 text-right h-full px-2 border-b flex items-center'>Next 1</div>
+            <div className='col-2 row-2 text-right h-full px-2 flex items-center'>Next 2</div>
+        </div>
+        );
+    }
+
     return (
         <form action={submit}>
             <div className="text-2xl mb-4">{title}</div>
-            <div className="grid grid-flow-col grid-rows-[repeat(33,auto)] grid-cols-[repeat(8,auto)] justify-start" >
+            <div className="grid grid-flow-col grid-rows-[repeat(35,auto)] grid-cols-[repeat(8,auto)] justify-start" >
                 <div className={labelClasses}>
                     Sat. Mode
                 </div>
@@ -463,16 +486,18 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                 <div className={'col-span-2 ' + containerClasses}>
                     <Textarea value={aocsCont} onChange={(e) => setAocsCont(e.target.value)} className={textareaClasses} />
                 </div>
-                <div className={'grid row-span-2 ' + labelClasses}>
-                    <div className='col-1 row-1 row-span-2'>Next Planned<br />Activities</div>
-                    <div className='col-2 row-1 text-right'>1</div>
-                    <div className='col-2 row-2 text-right'>2</div>
-                </div>
+                {nextActivitiesDiv()}
                 <div className={'col-span-2 ' + labelClasses}>
                     COMMENT
                 </div>
-                <div className={'col-span-2 border-b h-15 ' + containerClasses}>
+                <div className={'col-span-2 h-15 ' + containerClasses}>
                     <Textarea value={aocsComment} onChange={(e) => setAocsComment(e.target.value)} className={textareaClasses} />
+                </div>
+                <div className={labelClasses}>
+                    Briefed by
+                </div>
+                <div className={'border-b ' + containerClasses}>
+                    <Input type="text" className={inputClasses} value={briefedBy} onChange={(e) => setBriefedBy(e.target.value)} required={true} />
                 </div>
 
                 <div className={'py-4 col-span-8 justify-center flex gap-20 justify-center'}>
@@ -506,52 +531,52 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                     <StringSelector options={offChecked} value={gps2Mode} onChange={setGps2Mode} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={offChecked} value={str1} onChange={setStr1} required={false} />
+                    <StringSelector options={offChecked} value={str1} onChange={setStr1} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={offChecked} value={str2} onChange={setStr2} required={false} />
+                    <StringSelector options={offChecked} value={str2} onChange={setStr2} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={offChecked} value={suns1} onChange={setSuns1} required={false} />
+                    <StringSelector options={offChecked} value={suns1} onChange={setSuns1} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={offChecked} value={suns2} onChange={setSuns2} required={false} />
+                    <StringSelector options={offChecked} value={suns2} onChange={setSuns2} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={offChecked} value={suns3} onChange={setSuns3} required={false} />
+                    <StringSelector options={offChecked} value={suns3} onChange={setSuns3} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={offChecked} value={mgm1} onChange={setMgm1} required={false} />
+                    <StringSelector options={offChecked} value={mgm1} onChange={setMgm1} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={offChecked} value={mgm2} onChange={setMgm2} required={false} />
+                    <StringSelector options={offChecked} value={mgm2} onChange={setMgm2} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={offChecked} value={gyr1} onChange={setGyr1} required={false} />
+                    <StringSelector options={offChecked} value={gyr1} onChange={setGyr1} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={offChecked} value={gyr2} onChange={setGyr2} required={false} />
+                    <StringSelector options={offChecked} value={gyr2} onChange={setGyr2} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={offChecked} value={rwh1} onChange={setRwh1} required={false} />
+                    <StringSelector options={offChecked} value={rwh1} onChange={setRwh1} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={offChecked} value={rwh2} onChange={setRwh2} required={false} />
+                    <StringSelector options={offChecked} value={rwh2} onChange={setRwh2} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={offChecked} value={rwh3} onChange={setRwh3} required={false} />
+                    <StringSelector options={offChecked} value={rwh3} onChange={setRwh3} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={offChecked} value={rwh4} onChange={setRwh4} required={false} />
+                    <StringSelector options={offChecked} value={rwh4} onChange={setRwh4} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={offChecked} value={mtq1} onChange={setMtq1} required={false} />
+                    <StringSelector options={offChecked} value={mtq1} onChange={setMtq1} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={offChecked} value={mtq2} onChange={setMtq2} required={false} />
+                    <StringSelector options={offChecked} value={mtq2} onChange={setMtq2} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={propModes} value={propMode} onChange={setPropMode} required={false} />
+                    <StringSelector options={propModes} value={propMode} onChange={setPropMode} required={true} />
                 </div>
                 <div className={containerClasses}>
                     <Input type="text" className={inputClasses} value={tankTemp} onChange={(e) => setTankTemp(e.target.value)} />
@@ -560,16 +585,22 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                     <Input type="text" className={inputClasses} value={firing} onChange={(e) => setFiring(e.target.value)} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={offChecked} value={prop1} onChange={setProp1} required={false} />
+                    <StringSelector options={offChecked} value={prop1} onChange={setProp1} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={offChecked} value={prop2} onChange={setProp2} required={false} />
+                    <StringSelector options={offChecked} value={prop2} onChange={setProp2} required={true} />
                 </div>
                 <div className={'h-15 ' + containerClasses}>
-                    <Textarea value={aocsAct1} onChange={(e) => setAocsAct1(e.target.value)} className={textareaClasses} />
+                    <Textarea value={aocsAct1} onChange={(e) => setAocsAct1(e.target.value)} className={textareaClasses} required={false} />
                 </div>
                 <div className={'h-15 ' + containerClasses}>
-                    <Textarea value={aocsAct2} onChange={(e) => setAocsAct2(e.target.value)} className={textareaClasses} />
+                    <Textarea value={aocsAct2} onChange={(e) => setAocsAct2(e.target.value)} className={textareaClasses} required={false} />
+                </div>
+                <div className={labelClasses}>
+                    Briefing Time
+                </div>
+                <div className={'border-b ' + containerClasses}>
+                    <Input type="text" className={inputClasses} value={briefingTime} onChange={(e) => setBriefingTime(e.target.value)} required={true} />
                 </div>
 
 
@@ -640,16 +671,18 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                 <div className={'col-span-2 ' + containerClasses}>
                     <Textarea value={tmtcCont} onChange={(e) => setTmtcCont(e.target.value)} className={textareaClasses} />
                 </div>
-                <div className={'grid row-span-2 ' + labelClasses}>
-                    <div className='col-1 row-1 row-span-2'>Next Planned<br />Activities</div>
-                    <div className='col-2 row-1 text-right'>1</div>
-                    <div className='col-2 row-2 text-right'>2</div>
-                </div>
+                {nextActivitiesDiv()}
                 <div className={'col-span-2 ' + labelClasses}>
                     COMMENT
                 </div>
-                <div className={'col-span-2 border-b h-15 ' + containerClasses}>
+                <div className={'col-span-2 h-15 ' + containerClasses}>
                     <Textarea value={tmtcComment} onChange={(e) => setTmtcComment(e.target.value)} className={textareaClasses} />
+                </div>
+                <div className={'col-span-2 ' + labelClasses}>
+                    Pass AOS
+                </div>
+                <div className={'col-span-2 border-b ' + containerClasses}>
+                    <Input type="text" className={'w-full ' + inputClasses} value={aos} onChange={(e) => setAos(e.target.value)} />
                 </div>
 
                 {/* Column 4 */}
@@ -663,37 +696,37 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                     <StringSelector options={obtModes} value={obtMode} onChange={setObtMode} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <Input type="text" className={inputClasses} value={bootCnt} onChange={(e) => setBootCnt(e.target.value)} />
+                    <Input type="text" className={inputClasses} value={bootCnt} onChange={(e) => setBootCnt(e.target.value)} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <Input type="text" className={inputClasses} value={lsc1} onChange={(e) => setLsc1(e.target.value)} />
+                    <Input type="text" className={inputClasses} value={lsc1} onChange={(e) => setLsc1(e.target.value)} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <Input type="text" className={inputClasses} value={lsc2} onChange={(e) => setLsc2(e.target.value)} />
+                    <Input type="text" className={inputClasses} value={lsc2} onChange={(e) => setLsc2(e.target.value)} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <Input type="text" className={inputClasses} value={mtlSched} onChange={(e) => setMtlSched(e.target.value)} />
+                    <StringSelector options={enabledDisabled} value={mtlSched} onChange={setMtlSched} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={enabledDisabled} value={ssEnabled} onChange={setSsEnabled} required={false} />
+                    <Input type="text" className={inputClasses} value={ssEnabled} onChange={(e) => setSsEnabled(e.target.value)} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <Input type="text" className={inputClasses} value={bgsObUntil} onChange={(e) => setBgsObUntil(e.target.value)} />
+                    <Input type="text" className={inputClasses} value={bgsObUntil} onChange={(e) => setBgsObUntil(e.target.value)} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <Input type="text" className={inputClasses} value={lastDlData} onChange={(e) => setLastDlData(e.target.value)} />
+                    <Input type="text" className={inputClasses} value={lastDlData} onChange={(e) => setLastDlData(e.target.value)} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <Input type="text" className={inputClasses} value={dumpIntegrity} onChange={(e) => setDumpIntegrity(e.target.value)} />
+                    <Input type="text" className={inputClasses} value={dumpIntegrity} onChange={(e) => setDumpIntegrity(e.target.value)} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <Input type="text" className={inputClasses} value={authentication} onChange={(e) => setAuthentication(e.target.value)} />
+                    <StringSelector options={enabledDisabled} value={authentication} onChange={setAuthentication} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <Input type="text" className={inputClasses} value={hsc1} onChange={(e) => setHsc1(e.target.value)} />
+                    <StringSelector options={onOffNokValues} value={hsc1} onChange={setHsc1} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <Input type="text" className={inputClasses} value={hsc2} onChange={(e) => setHsc2(e.target.value)} />
+                    <StringSelector options={onOffNokValues} value={hsc2} onChange={setHsc2} required={true} />
                 </div>
                 <div className={'h-15 ' + containerClasses}>
                     <Textarea value={tmtcAct1} onChange={(e) => setTmtcAct1(e.target.value)} className={textareaClasses} />
@@ -742,16 +775,18 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                 <div className={'col-span-2 ' + containerClasses}>
                     <Textarea value={ptsCont} onChange={(e) => setPtsCont(e.target.value)} className={textareaClasses} />
                 </div>
-                <div className={'grid row-span-2 ' + labelClasses}>
-                    <div className='col-1 row-1 row-span-2'>Next Planned<br />Activities</div>
-                    <div className='col-2 row-1 text-right'>1</div>
-                    <div className='col-2 row-2 text-right'>2</div>
-                </div>
+                {nextActivitiesDiv()}
                 <div className={'col-span-2 ' + labelClasses}>
                     COMMENT
                 </div>
-                <div className={'col-span-2 border-b h-15 ' + containerClasses}>
+                <div className={'col-span-2 h-15 ' + containerClasses}>
                     <Textarea value={ptsComment} onChange={(e) => setPtsComment(e.target.value)} className={textareaClasses} />
+                </div>
+                <div className={'col-span-2 ' + labelClasses}>
+                    Pass LOS
+                </div>
+                <div className={'col-span-2 border-b ' + containerClasses}>
+                    <Input type="text" className={'w-full ' + inputClasses} value={los} onChange={(e) => setLos(e.target.value)} required={true} />
                 </div>
 
                 {/* Column 6 */}
@@ -759,22 +794,22 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                     <StringSelector options={greenRed} value={overallStatus} onChange={setOverallStatus} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <Input type="text" className={inputClasses} value={soc} onChange={(e) => setSoc(e.target.value)} />
+                    <Input type="text" className={inputClasses} value={soc} onChange={(e) => setSoc(e.target.value)} required={true} />
                 </div>
                 <div className={containerClasses}>
                     <Input type="text" className={inputClasses} value={busV} onChange={(e) => setBusV(e.target.value)} />
                 </div>
                 <div className={'row-span-3 ' + containerClasses}>
-                    <Textarea value={plStatus} onChange={(e) => setPlStatus(e.target.value)} className={textareaClasses} />
+                    <Textarea value={plStatus} onChange={(e) => setPlStatus(e.target.value)} className={textareaClasses} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={onOffNokValues} value={pdhu1} onChange={setPdhu1} required={false} />
+                    <StringSelector options={onOffNokValues} value={pdhu1} onChange={setPdhu1} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={onOffNokValues} value={pdhu2} onChange={setPdhu2} required={false} />
+                    <StringSelector options={onOffNokValues} value={pdhu2} onChange={setPdhu2} required={true} />
                 </div>
                 <div className={containerClasses}>
-                    <StringSelector options={onOffNokValues} value={pdhu3} onChange={setPdhu3} required={false} />
+                    <StringSelector options={onOffNokValues} value={pdhu3} onChange={setPdhu3} required={true} />
                 </div>
                 <div className={'h-15 ' + containerClasses}>
                     <Textarea value={ptsAct1} onChange={(e) => setPtsAct1(e.target.value)} className={textareaClasses} />
@@ -848,54 +883,56 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                 <div className={'col-span-2 border-r ' + containerClasses}>
                     <Textarea value={grdCont} onChange={(e) => setGrdCont(e.target.value)} className={textareaClasses} />
                 </div>
-                <div className={'grid row-span-2 ' + labelClasses}>
-                    <div className='col-1 row-1 row-span-2'>Next Planned<br />Activities</div>
-                    <div className='col-2 row-1 text-right'>1</div>
-                    <div className='col-2 row-2 text-right'>2</div>
-                </div>
+                {nextActivitiesDiv()}
                 <div className={'col-span-2 border-r ' + labelClasses}>
                     COMMENT
                 </div>
-                <div className={'col-span-2 border-b border-r h-15 ' + containerClasses}>
+                <div className={'col-span-2 border-r h-15 ' + containerClasses}>
                     <Textarea value={grdComment} onChange={(e) => setGrdComment(e.target.value)} className={textareaClasses} />
+                </div>
+                <div className={'col-span-2 border-r ' + labelClasses}>
+                    Station
+                </div>
+                <div className={'col-span-2 border-b border-r ' + containerClasses}>
+                    <Input type="text" className={'w-full ' + inputClasses} value={station} onChange={(e) => setStation(e.target.value)} required={true} />
                 </div>
 
                 {/* Column 8 */}
                 <div className={`border-r ${containerClasses} ${inputWidth}`}>
-                    <StringSelector options={okNokValues} value={geccos} onChange={setGeccos} required={false} />
+                    <StringSelector options={okNokValues} value={geccos} onChange={setGeccos} required={true} />
                 </div>
                 <div className={'border-r ' + containerClasses}>
-                    <StringSelector options={okNokValues} value={opsWeb} onChange={setOpsWeb} required={false} />
+                    <StringSelector options={okNokValues} value={opsWeb} onChange={setOpsWeb} required={true} />
                 </div>
                 <div className={'border-r ' + containerClasses}>
-                    <StringSelector options={okNokValues} value={satmon} onChange={setSatmon} required={false} />
+                    <StringSelector options={okNokValues} value={satmon} onChange={setSatmon} required={true} />
                 </div>
                 <div className={'border-r ' + containerClasses}>
-                    <StringSelector options={okNokValues} value={sAtHome} onChange={setSAtHome} required={false} />
+                    <StringSelector options={okNokValues} value={sAtHome} onChange={setSAtHome} required={true} />
                 </div>
                 <div className={'border-r ' + containerClasses}>
-                    <StringSelector options={okNokValues} value={afd} onChange={setAfd} required={false} />
+                    <StringSelector options={okNokValues} value={afd} onChange={setAfd} required={true} />
                 </div>
                 <div className={'border-r ' + containerClasses}>
-                    <StringSelector options={okNokValues} value={protos} onChange={setProtos} required={false} />
+                    <StringSelector options={okNokValues} value={protos} onChange={setProtos} required={true} />
                 </div>
                 <div className={'border-r ' + containerClasses}>
-                    <StringSelector options={okNokValues} value={mops} onChange={setMops} required={false} />
+                    <StringSelector options={okNokValues} value={mops} onChange={setMops} required={true} />
                 </div>
                 <div className={'border-r ' + containerClasses}>
-                    <StringSelector options={okNokValues} value={kmf} onChange={setKmf} required={false} />
+                    <StringSelector options={okNokValues} value={kmf} onChange={setKmf} required={true} />
                 </div>
                 <div className={'border-r ' + containerClasses}>
-                    <StringSelector options={okNokValues} value={sgo} onChange={setSgo} required={false} />
+                    <StringSelector options={okNokValues} value={sgo} onChange={setSgo} required={true} />
                 </div>
                 <div className={'border-r ' + containerClasses}>
-                    <StringSelector options={okNokValues} value={mps} onChange={setMps} required={false} />
+                    <StringSelector options={okNokValues} value={mps} onChange={setMps} required={true} />
                 </div>
                 <div className={'border-r ' + containerClasses}>
-                    <StringSelector options={okNokValues} value={fds} onChange={setFds} required={false} />
+                    <StringSelector options={okNokValues} value={fds} onChange={setFds} required={true} />
                 </div>
                 <div className={'border-r ' + containerClasses}>
-                    <StringSelector options={odValues} value={odBasedOn} onChange={setOdBasedOn} required={false} />
+                    <StringSelector options={odValues} value={odBasedOn} onChange={setOdBasedOn} required={true} />
                 </div>
                 <div className={'h-15 border-r ' + containerClasses}>
                     <Textarea value={grdAct1} onChange={(e) => setGrdAct1(e.target.value)} className={textareaClasses} />
@@ -903,11 +940,6 @@ export default function PostPassBriefingSER({ number }: { number: number | undef
                 <div className={'h-15 border-r ' + containerClasses}>
                     <Textarea value={grdAct2} onChange={(e) => setGrdAct2(e.target.value)} className={textareaClasses} />
                 </div>
-
-
-
-
-
             </div>
         </form>
     );

@@ -6,14 +6,13 @@ import { NavLink, useNavigate } from 'react-router';
 import { SELECT_GENERIC_REPORTS } from '~/graphQLQueries';
 import { Button } from '@headlessui/react';
 import { Pagination } from '../pagination';
-import StatusColorSelector from '../statusColorSelector';
 
 
 export default function PassLogsSER() {
     const { project, user } = useOpsWebContext();
     const [reports, setReports] = useState<IGenericReport[]>([]);
     const [page, setPage] = useState<number>(1);
-    const [pageSize, setPageSize] = useState(20);
+    const [pageSize, setPageSize] = useState(25);
     const [totalItems, setTotalItems] = useState(0);
     const totalPages = Math.ceil(totalItems / pageSize);
 
@@ -93,6 +92,7 @@ export default function PassLogsSER() {
             <table className="table-auto border">
                 <thead>
                     <tr className={titleClasses}>
+                        <th className="border px-1">#</th>
                         <th className="border px-1">Created</th>
                         <th className="border px-1">Pass #</th>
                         <th className="border px-1">Station</th>
@@ -103,7 +103,12 @@ export default function PassLogsSER() {
                 </thead>
                 <tbody className="">
                     {reports.map((report) => (
-                        <tr key={report.id}>
+                        <tr
+                            key={report.id}
+                            className="cursor-pointer hover:bg-gray-100"
+                            onClick={() => navigate(`../pass-logs/:${report.number}`)}
+                        >
+                            <td className="border text-right px-1">{report.number}</td>
                             <td className="border text-left px-1"><NavLink to={`../pass-logs/:${report.number}`}>{report.creationDate ? formatDateTime(new Date(report.creationDate)) : ""}</NavLink></td>
                             <td className="border text-left px-1">{report.detail?.passNumber}</td>
                             <td className="border text-left px-1">{report.creator.name}</td>
