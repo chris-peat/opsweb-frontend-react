@@ -8,9 +8,10 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { getClient } from '~/apollo';
 import { gql, type TypedDocumentNode } from '@apollo/client';
 import { CREATE_GENERIC_REPORT, SELECT_GENERIC_REPORT_BY_PROJECT_TYPE_NUMBER, SELECT_GENERIC_REPORTS, USERS_IN_ROLE } from '~/graphQLQueries';
-import { useNavigate } from 'react-router';
+import { NavLink, useNavigate } from 'react-router';
 import type { IUser } from '~/models/user';
 import { toStringNoSeconds } from '~/utilities/time';
+import ReportNavLink from '../reportNavLink';
 
 interface IFormInput {
     notes: string
@@ -27,9 +28,8 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
     const [acs, setAcs] = useState<string>(report?.detail?.["acs"] || "");
     const [thm, setThm] = useState<string>(report?.detail?.["thm"] || "");
     const [cpps, setCpps] = useState<string>(report?.detail?.["cpps"] || "");
-    const [bdh, setBdh] = useState<string>(report?.detail?.["bdh"] || "");
+    const [dhs, setDhs] = useState<string>(report?.detail?.["dhs"] || "");
     const [epps, setEpps] = useState<string>(report?.detail?.["epps"] || "");
-    const [cry, setCry] = useState<string>(report?.detail?.["cry"] || "");
     const [pwr, setPwr] = useState<string>(report?.detail?.["pwr"] || "");
     const [ttr, setTtr] = useState<string>(report?.detail?.["ttr"] || "");
     const [wt, setWt] = useState<string>(report?.detail?.["wt"] || "");
@@ -45,8 +45,6 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
     const [connectionTest, setConnectionTest] = useState<boolean>(report?.detail?.["connectionTest"] || false);
     const [icinga, setIcinga] = useState<boolean>(report?.detail?.["icinga"] || false);
     const [secureChat, setSecureChat] = useState<boolean>(report?.detail?.["secureChat"] || false);
-    const [timeCorrelation, setTimeCorrelation] = useState<boolean>(report?.detail?.["timeCorrelation"] || false);
-    const [rangingData, setRangingData] = useState<boolean>(report?.detail?.["rangingData"] || false);
     const [pintaOnWeb, setPintaOnWeb] = useState<boolean>(report?.detail?.["pintaOnWeb"] || false);
     const [l1ArcValue, setL1ArcValue] = useState<string>(report?.detail?.["l1ArcValue"] || "");
     const [antennaPrime, setAntennaPrime] = useState<string>(report?.detail?.["antennaPrime"] || "");
@@ -64,6 +62,10 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
     const [general, setGeneral] = useState<string>(report?.detail?.["general"] || "");
     const [eclipse, setEclipse] = useState<boolean>(report?.detail?.["eclipse"] || false);
     const [handoverTo, setHandoverTo] = useState<any>(report?.detail?.["handoverTo"] || "");
+    const [weeklyReport, setWeeklyReport] = useState<boolean>(report?.detail?.["weeklyReport"] || false);
+    const [protos, setProtos] = useState<string>(report?.detail?.["protos"] || "");
+    const [commanding, setCommanding] = useState<string>(report?.detail?.["commanding"] || "");
+    const [upcomingRIs, setUpcomingRIs] = useState<any[]>(report?.detail?.["upcomingRIs"] || []);
 
     const [operators, setOperators] = useState<any[]>([]);
 
@@ -115,10 +117,6 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
             }
         });
 
-        if (data?.project.genericReports.total === 0) {
-            return;
-        }
-
         const latestReport = data?.project.genericReports.reports[0];
 
         try {
@@ -128,9 +126,8 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
             setAcs(detail.acs || "");
             setThm(detail.thm || "");
             setCpps(detail.cpps || "");
-            setBdh(detail.bdh || "");
+            setDhs(detail.dhs || "");
             setEpps(detail.epps || "");
-            setCry(detail.cry || "");
             setPwr(detail.pwr || "");
             setTtr(detail.ttr || "");
 
@@ -155,14 +152,52 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
             setMapId(detail.mapId || "");
             setSpacecraftMode(detail.spacecraftMode || "");
             setAocsMode(detail.aocsMode || "");
+            setProtos(detail.protos || "");
+            setCommanding(detail.commanding || "");
 
             setHandoverTo(detail?.handoverTo || undefined);
         }
         catch (error) { }
     }
 
-    function handleImport() {
-        alert("Not implemented yet");
+    async function handleImport() {
+        // fetch list upcoming recommendations and a list of those executed since the last shift handover
+        let apolloClient = getClient();
+        const { data } = await apolloClient.query({
+            query: SELECT_GENERIC_REPORTS,
+            variables: {
+                projectId: project,
+                input: {
+                    type: "RI",
+                    filters: [
+                        {
+                            fieldName: "detail.status",
+                            operator: "IN",
+                            stringValues: [
+                                "NeedsFirstLeadSignature",
+                                "Approved",
+                                "NeedsFirstManagerSignature"
+                            ]
+                        }
+                    ],
+                    sorting: {
+                        fieldName: "number",
+                        order: "ASC"
+                    }
+                }
+            }
+        });
+        
+        if (data?.project.genericReports.total === 0) {
+            setUpcomingRIs([]);
+        }
+        else {  
+            setUpcomingRIs(data?.project.genericReports.reports.map(r => {
+                const detail = JSON.parse(r.detail);
+                return { number: r.number, title: detail.title };
+            }) || []);
+        }
+
     }
 
     async function submit(formData: FormData) {
@@ -172,13 +207,11 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
         }
 
         let report: any = {
-            acs, epps, shift, shiftEnd, thm, cpps, bdh, cry, pwr, ttr, wt, mil, ssu, gcuBackup, gcuPrime,
+            acs, epps, shift, shiftEnd, thm, cpps, dhs, pwr, ttr, wt, mil, ssu, gcuBackup, gcuPrime,
             l1ArcValue, antennaPrime, antennaBackup, cortexPrime, cortexBackup, vcId, mapId, spacecraftMode,
-            aocsMode, chainPrime, chainBackup,
-            uhd, connectionTest, icinga, secureChat, timeCorrelation, rangingData, pintaOnWeb,
-            eclipse,
-            geoDailyCheck, geccosCheck, moonSunInterference, comments, notes, outOfOrder, toDo, general,
-
+            aocsMode, chainPrime, chainBackup, protos, commanding,
+            uhd, connectionTest, icinga, secureChat, weeklyReport, pintaOnWeb, eclipse,
+            geoDailyCheck, geccosCheck, moonSunInterference, comments, notes, outOfOrder, toDo, general, upcomingRIs
         };
 
         report.handoverTo = handoverTo;
@@ -195,6 +228,15 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
         });
 
         navigate(`../shift-handover-logs`);
+    }
+
+    function formatRiLink(number: number, title: string) {
+        return (
+        <>
+            <div className='border-l'><ReportNavLink projectId={project} type="RI" number={number} numDigits={4} /></div>
+            <div className='pl-2'>{title}</div>
+        </>
+        );
     }
 
     const titleClasses = project + "-secondary items-left align-middle px-2 text-base";
@@ -248,7 +290,7 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                 <div className={`col-2 row-3 flex`}>
                     <Input type="text" className="px-2 text-base font-medium leading-6 text-black bg-white border border-gray-400 focus:outline-none focus:ring-0 focus:border-blue-700 min-h-full" value={shiftEnd} onChange={(e) => setShiftEnd(e.target.value)} name="shiftEnd" required disabled={readOnly} />
                     <Button className={`${project}-primary items-center justify-center px-2 py-1 text-sm text-base font-medium leading-6 whitespace-no-wrap border border-blue-700 rounded-md shadow-sm hover:cursor-pointer hover:brightness-90 focus:outline-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50`}
-                        onClick={() => setShiftEnd(toStringNoSeconds(new Date()))} title="Set shift end to the current time"  disabled={readOnly}>
+                        onClick={() => setShiftEnd(toStringNoSeconds(new Date()))} title="Set shift end to the current time" disabled={readOnly}>
                         &lt;- Now
                     </Button>
                 </div>
@@ -259,7 +301,7 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                 </div>
                 <div className={`col-1 col-span-4 row-5 border-l ${grayClasses} flex gap-20 justify-center`}>
                     <Button className={buttonClasses} onClick={handlePrefill} disabled={readOnly}
-                            title="Pre-fill fields with values from last log">
+                        title="Pre-fill fields with values from last log">
                         Prefill
                     </Button>
                     <Button type='submit' className={buttonClasses} disabled={readOnly}>
@@ -301,10 +343,10 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                     <StatusColorSelector name="cpps" value={cpps} onChange={setCpps} required disabled={readOnly} />
                 </div>
                 <div className={`text-right ${grayClasses}`}>
-                    BDH
+                    DHS
                 </div>
                 <div className="bg-gray-200">
-                    <StatusColorSelector name="bdh" value={bdh} onChange={(value) => setBdh(value)} required disabled={readOnly} />
+                    <StatusColorSelector name="dhs" value={dhs} onChange={(value) => setDhs(value)} required disabled={readOnly} />
                 </div>
                 <div className={`col-1 border-l text-right ${grayClasses}`}>
                     EPPS
@@ -313,10 +355,10 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                     <StatusColorSelector name="epps" value={epps} onChange={(value) => setEpps(value)} required disabled={readOnly} />
                 </div>
                 <div className={`text-right ${grayClasses}`}>
-                    CRY
+                    TTR
                 </div>
                 <div className="bg-gray-200">
-                    <StatusColorSelector name="cry" value={cry} onChange={(value) => setCry(value)} required disabled={readOnly} />
+                    <StatusColorSelector name="ttr" value={ttr} onChange={(value) => setTtr(value)} required disabled={readOnly} />
                 </div>
                 <div className={`col-1 border-l text-right ${grayClasses}`}>
                     PWR
@@ -324,11 +366,7 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                 <div className="bg-gray-200">
                     <StatusColorSelector name="pwr" value={pwr} onChange={(value) => setPwr(value)} required disabled={readOnly} />
                 </div>
-                <div className={`text-right ${grayClasses}`}>
-                    TTR
-                </div>
-                <div className="bg-gray-200">
-                    <StatusColorSelector name="ttr" value={ttr} onChange={(value) => setTtr(value)} required disabled={readOnly} />
+                <div className={`col-span-2 ${grayClasses}`}>
                 </div>
                 <div className={'col-span-4 border-l ' + titleClasses}>
                     Payload
@@ -372,11 +410,8 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                 <div className="bg-gray-200">
                     <StatusColorSelector name="gcuBackup" value={gcuBackup} onChange={(value) => setGcuBackup(value)} required disabled={readOnly} />
                 </div>
-                <div className={`text-right ${grayClasses}`}>
-                    RIs
-                </div>
-                <div className="bg-gray-200 border-r">
-                    <Input type="text" defaultValue={""} className={inputClasses} disabled={readOnly} />
+                <div className="bg-gray-200 col-span-2 border-r grid grid-cols-2 gap-x-1">
+                    {upcomingRIs.map(ri => formatRiLink(ri.number, ri.title))}
                 </div>
                 <div className={`border-l text-right ${grayClasses}`}>
                     GCU Prime
@@ -419,7 +454,7 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                 </div>
                 <div className={`${grayClasses}`}>
                 </div>
-                <div className={`col-span-2 row-span-7 h-full border-r`}>
+                <div className={`col-span-2 row-span-9 h-full border-r`}>
                     <Textarea value={toDo} onChange={(e) => setToDo(e.target.value)} className={textareaClasses} name="toDo" disabled={readOnly} />
                 </div>
                 <div className={`border-l text-right ${grayClasses}`}>
@@ -476,6 +511,22 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                 </div>
                 <div className={`col-span-2 ${grayClasses}`}>
                 </div>
+                <div className={`border-l text-right ${grayClasses}`}>
+                    ProToS
+                </div>
+                <div className={``}>
+                    <Input type="text" value={protos} onChange={(e) => setProtos(e.target.value)} className={inputClasses} disabled={readOnly} />
+                </div>
+                <div className={`col-span-2 ${grayClasses}`}>
+                </div>
+                <div className={`border-l text-right ${grayClasses}`}>
+                    Commanding Pause
+                </div>
+                <div className={``}>
+                    <Input type="text" value={commanding} onChange={(e) => setCommanding(e.target.value)} className={inputClasses} disabled={readOnly} />
+                </div>
+                <div className={`col-span-2 ${grayClasses}`}>
+                </div>
                 <div className={'col-span-6 border-l border-r ' + titleClasses}>
                     Standard Checks
                 </div>
@@ -518,24 +569,16 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                     <Checkbox className={checkClasses} checked={secureChat} onChange={setSecureChat} disabled={readOnly} />
                 </div>
                 <div className={`border-l text-right ${grayClasses}`}>
-                    Time Correlation
-                </div>
-                <div className={`flex justify-center items-center p-1 ${grayClasses}`}>
-                    <Checkbox className={checkClasses} checked={timeCorrelation} onChange={setTimeCorrelation} disabled={readOnly} />
-                </div>
-                <div className={`text-right ${grayClasses}`}>
-                    Ranging Data
-                </div>
-                <div className={`flex justify-center items-center p-1 ${grayClasses}`}>
-                    <Checkbox className={checkClasses} checked={rangingData} onChange={setRangingData} disabled={readOnly} />
-                </div>
-                <div className={`border-l text-right ${grayClasses}`}>
                     PintaOnWeb
                 </div>
                 <div className={`flex justify-center items-center p-1 ${grayClasses}`}>
                     <Checkbox className={checkClasses} checked={pintaOnWeb} onChange={setPintaOnWeb} disabled={readOnly} />
                 </div>
-                <div className={`col-span-2 ${grayClasses}`}>
+                <div className={`text-right ${grayClasses}`}>
+                    Weekly Report (Tuesday M)
+                </div>
+                <div className={`flex justify-center items-center p-1 ${grayClasses}`}>
+                    <Checkbox className={checkClasses} checked={weeklyReport} onChange={setWeeklyReport} disabled={readOnly} />
                 </div>
                 <div className={`border-l text-right ${grayClasses}`}>
                     Comments
