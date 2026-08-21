@@ -7,7 +7,7 @@ import type { IGenericReport } from '~/models/genericReport';
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { getClient } from '~/apollo';
 import { gql, type TypedDocumentNode } from '@apollo/client';
-import { CREATE_GENERIC_REPORT, SELECT_GENERIC_REPORT_BY_PROJECT_TYPE_NUMBER, SELECT_GENERIC_REPORTS, USERS_IN_ROLE } from '~/graphQLQueries';
+import { CREATE_GENERIC_REPORT, SELECT_GENERIC_REPORT_BY_PROJECT_TYPE_NUMBER, SELECT_GENERIC_REPORTS, SELECT_OPSLOG_ENTRIES, USERS_IN_ROLE } from '~/graphQLQueries';
 import { NavLink, useNavigate } from 'react-router';
 import type { IUser } from '~/models/user';
 import { toStringNoSeconds } from '~/utilities/time';
@@ -66,6 +66,8 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
     const [protos, setProtos] = useState<string>(report?.detail?.["protos"] || "");
     const [commanding, setCommanding] = useState<string>(report?.detail?.["commanding"] || "");
     const [upcomingRIs, setUpcomingRIs] = useState<any[]>(report?.detail?.["upcomingRIs"] || []);
+    const [executedRIs, setExecutedRIs] = useState<any[]>(report?.detail?.["executedRIs"] || []);
+    const [opslogEntries, setOpslogEntries] = useState<any[]>(report?.detail?.["opslogEntries"] || []);
 
     const [operators, setOperators] = useState<any[]>([]);
 
@@ -161,7 +163,30 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
     }
 
     async function handleImport() {
-        // fetch list upcoming recommendations and a list of those executed since the last shift handover
+        // get the time the last shoft handover log was submitted
+        let apolloClient = getClient();
+        const { data } = await apolloClient.query({
+            query: SELECT_GENERIC_REPORTS,
+            variables: {
+                projectId: project,
+                input: {
+                    type: "SHL",
+                    paging: {
+                        skip: 0,
+                        take: 1
+                    },
+                }
+            }
+        });
+
+        const latestReport = data?.project.genericReports.reports[0];
+        const lastReportSubmissionDate = latestReport ? new Date(latestReport.creationDate) : new Date();
+
+        await fetchUpcomingRecommendations();
+        await fetchOpslogEntries(lastReportSubmissionDate);
+    }
+
+    async function fetchUpcomingRecommendations() {
         let apolloClient = getClient();
         const { data } = await apolloClient.query({
             query: SELECT_GENERIC_REPORTS,
@@ -187,17 +212,91 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                 }
             }
         });
-        
+
         if (data?.project.genericReports.total === 0) {
             setUpcomingRIs([]);
         }
-        else {  
+        else {
             setUpcomingRIs(data?.project.genericReports.reports.map(r => {
                 const detail = JSON.parse(r.detail);
                 return { number: r.number, title: detail.title };
             }) || []);
         }
+    }
 
+    async function fetchExecutedRecommendations(lastReportSubmissionDate: Date) {
+        let apolloClient = getClient();
+        const { data } = await apolloClient.query({
+            query: SELECT_GENERIC_REPORTS,
+            variables: {
+                projectId: project,
+                input: {
+                    type: "RI",
+                    filters: [
+                        {
+                            fieldName: "creationDate",
+                            operator: "BETWEEN",
+                            dateValues: [
+                                lastReportSubmissionDate.toISOString(),
+                                new Date()
+                            ]
+                        },
+                        {
+                            fieldName: "detail.status",
+                            operator: "IN",
+                            stringValues: [
+                                "Executed"
+                            ]
+                        }
+                    ],
+                    sorting: {
+                        fieldName: "number",
+                        order: "ASC"
+                    }
+                }
+            }
+        });
+
+        if (data?.project.genericReports.total === 0) {
+            setExecutedRIs([]);
+        }
+        else {
+            setExecutedRIs(data?.project.genericReports.reports.map(r => {
+                const detail = JSON.parse(r.detail);
+                return { number: r.number, title: detail.title };
+            }) || []);
+        }
+    }
+
+    /** Fetch the OpsLog entries for this project which were created after the last shift handover log was sumbitted */
+    async function fetchOpslogEntries(lastReportSubmissionDate: Date) {
+        let maxDate = new Date();
+        let minDate = lastReportSubmissionDate;
+
+        let apolloClient = getClient();
+        const { data } = await apolloClient.query({
+            query: SELECT_OPSLOG_ENTRIES,
+            variables: {
+                projectId: project,
+                input: {
+                    minDate: minDate,
+                    maxDate: maxDate,
+                    sorting: {
+                        fieldName: "eventDate",
+                        order: "ASC"
+                    }
+                }
+            }
+        });
+
+        if (data?.project?.opslogEntries?.total ?? 0 === 0) {
+            setOpslogEntries([]);
+        }
+        else {
+            setOpslogEntries(data?.project.opslogEntries.entries.map(e => {
+                return { id: e.id, summary: e.summary };
+            }) || []);
+        }
     }
 
     async function submit(formData: FormData) {
@@ -211,7 +310,8 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
             l1ArcValue, antennaPrime, antennaBackup, cortexPrime, cortexBackup, vcId, mapId, spacecraftMode,
             aocsMode, chainPrime, chainBackup, protos, commanding,
             uhd, connectionTest, icinga, secureChat, weeklyReport, pintaOnWeb, eclipse,
-            geoDailyCheck, geccosCheck, moonSunInterference, comments, notes, outOfOrder, toDo, general, upcomingRIs
+            geoDailyCheck, geccosCheck, moonSunInterference, comments, notes, outOfOrder, toDo, general, upcomingRIs,
+            executedRIs, opslogEntries
         };
 
         report.handoverTo = handoverTo;
@@ -232,10 +332,19 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
 
     function formatRiLink(number: number, title: string) {
         return (
-        <>
-            <div className='border-l'><ReportNavLink projectId={project} type="RI" number={number} numDigits={4} /></div>
-            <div className='pl-2'>{title}</div>
-        </>
+            <>
+                <div className='px-2'><ReportNavLink projectId={project} type="RI" number={number} numDigits={4} /></div>
+                <div className='pr-2 col-2'>{title}</div>
+            </>
+        );
+    }
+
+    function formatOpslogLink(id: number, summary: string) {
+        return (
+            <>
+                <div className='px-2'><ReportNavLink projectId={project} type="OL" number={id} numDigits={4} /></div>
+                <div className='pr-2 col-2'>{summary}</div>
+            </>
         );
     }
 
@@ -256,9 +365,11 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                 <div className={'col-1 col-span-4 row-1 border-t border-l ' + titleClasses}>
                     Shift Handover Log
                 </div>
-                <div className={'col-5  col-span-2 row-1 border-t border-r ' + titleClasses}>
+                <div className={'col-5 col-span-2 row-1 min-w-100 border-t border-r ' + titleClasses}>
                     Notes
                 </div>
+                {/* <div className={'col-1 col-span-6 bg-red-600 h-px' }>
+                </div> */}
                 <div className={`col-1 row-2 align-end text-right border-l ${grayClasses}`}>
                     Shift
                 </div>
@@ -386,11 +497,8 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                 <div className="bg-gray-200">
                     <StatusColorSelector name="mil" value={mil} onChange={(value) => setMil(value)} required disabled={readOnly} />
                 </div>
-                <div className={`text-right ${grayClasses}`}>
-                    RIs
-                </div>
-                <div className="bg-gray-200 border-r">
-                    <Input type="text" defaultValue={""} className={inputClasses} disabled={readOnly} />
+                <div className="bg-gray-200 col-span-2 border-r grid justify-start max-w-100">
+                    {executedRIs.map(ri => formatRiLink(ri.number, ri.title))}
                 </div>
                 <div className={'col-span-4 border-l ' + titleClasses}>
                     SSU/GCU
@@ -410,7 +518,7 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                 <div className="bg-gray-200">
                     <StatusColorSelector name="gcuBackup" value={gcuBackup} onChange={(value) => setGcuBackup(value)} required disabled={readOnly} />
                 </div>
-                <div className="bg-gray-200 col-span-2 border-r grid grid-cols-2 gap-x-1">
+                <div className="bg-gray-200 col-span-2 row-span-3 border-r grid justify-start max-w-100">
                     {upcomingRIs.map(ri => formatRiLink(ri.number, ri.title))}
                 </div>
                 <div className={`border-l text-right ${grayClasses}`}>
@@ -421,7 +529,7 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                 </div>
                 <div className={`text-right ${grayClasses}`}>
                 </div>
-                <div className={`col-span-3 row-span-2 border-r ${grayClasses}`}>
+                <div className={`row-span-2 ${grayClasses}`}>
                 </div>
                 <div className={`border-l text-right ${grayClasses}`}>
                     L1 Arc Value
@@ -441,7 +549,7 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                     Backup
                 </div>
                 <div className={'col-span-2 border-r ' + titleClasses}>
-                    To Do
+                    Opslog Entries
                 </div>
                 <div className={`border-l text-right ${grayClasses}`}>
                     Antenna
@@ -454,10 +562,10 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                 </div>
                 <div className={`${grayClasses}`}>
                 </div>
-                <div className={`col-span-2 row-span-9 h-full border-r`}>
-                    <Textarea value={toDo} onChange={(e) => setToDo(e.target.value)} className={textareaClasses} name="toDo" disabled={readOnly} />
+                 <div className="bg-gray-200 col-span-2 row-span-9 border-r grid justify-start max-w-100">
+                    {opslogEntries.map(ole => formatOpslogLink(ole.id, ole.summary))}
                 </div>
-                <div className={`border-l text-right ${grayClasses}`}>
+               <div className={`border-l text-right ${grayClasses}`}>
                     Cortex
                 </div>
                 <div className={``}>
@@ -527,8 +635,11 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                 </div>
                 <div className={`col-span-2 ${grayClasses}`}>
                 </div>
-                <div className={'col-span-6 border-l border-r ' + titleClasses}>
+                <div className={'col-span-4 border-l ' + titleClasses}>
                     Standard Checks
+                </div>
+                <div className={'col-span-2 border-r ' + titleClasses}>
+                    To Do
                 </div>
                 <div className={`border-l text-right ${grayClasses}`}>
                     GEO Daily Check
@@ -542,7 +653,8 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
                 <div className={`flex justify-center items-center p-1 ${grayClasses}`}>
                     <Checkbox className={checkClasses} name="geccosCheck" checked={geccosCheck} onChange={setGeccosCheck} disabled={readOnly}></Checkbox>
                 </div>
-                <div className={`row-span-6 col-span-2 border-r ${grayClasses}`}>
+                <div className={`col-span-2 row-span-5 h-full border-r`}>
+                    <Textarea value={toDo} onChange={(e) => setToDo(e.target.value)} className={textareaClasses} name="toDo" disabled={readOnly} />
                 </div>
                 <div className={`border-l text-right ${grayClasses}`}>
                     UHD

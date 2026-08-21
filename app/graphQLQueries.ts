@@ -110,3 +110,25 @@ export const UPDATE_GENERIC_REPORT: TypedDocumentNode<
     }
 }
 `;
+
+
+export const SELECT_OPSLOG_ENTRIES: TypedDocumentNode<
+  { project: { id: string, opslogEntries: { total: number, entries: any[] } } }
+> = gql`
+query ($projectId: String!, $input: OpslogEntrySelectionInput!) {
+  project(id: $projectId) {
+    opslogEntries(input: $input) {
+      total
+
+      entries {
+        id
+        eventDate
+        generationDate
+        type
+        summary
+      }
+    }
+  }
+}
+`;
+
