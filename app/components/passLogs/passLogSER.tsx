@@ -21,6 +21,7 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
     const { project, user } = useOpsWebContext();
 
     const isNew = !(number !== undefined && number > 0);
+    const [operator, setOperator] = useState<string>(user);
     const [passNumber, setPassNumber] = useState<number>();
     const [station, setStation] = useState<string>();
     const [aos, setAos] = useState<string>();
@@ -64,6 +65,7 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
                 } catch (error) {
                     //console.error("Error parsing report detail:", error);
                 }
+                setOperator(detail.operator);
                 setPassNumber(detail.passNumber);
                 setStation(detail.station);
                 setAos(detail.aos);
@@ -88,7 +90,7 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
 
     async function submit(formData: FormData) {
         let details: any = {
-            passNumber, station, aos, los, scsw, satMode, acsMode, dmb1, dmb2,
+            operator, passNumber, station, aos, los, scsw, satMode, acsMode, dmb1, dmb2,
             ris, stdFiles, otherFiles, spare, warnings, alarms, conCheck, comments, obeh
         };
 
@@ -147,12 +149,12 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
                     Station:
                 </div>
                 <div className='col-1 border-l px-1 bg-gray-200'>
-                    <Input type="text" className={inputClasses} value={user} disabled={true} />
+                    <Input type="text" className={inputClasses} value={operator} onChange={(e) => setOperator(e.target.value)} required />
                 </div>
                 <div className={grayClasses}>
                 </div>
                 <div className="col-3 px-1 bg-gray-200">
-                    <Input type="text" className={inputClasses} value={passNumber} onChange={(e) => setPassNumber(parseInt(e.target.value))} required />
+                    <Input type="number" className={inputClasses} value={passNumber} onChange={(e) => setPassNumber(parseInt(e.target.value))} required />
                 </div>
                 <div className="col-4 border-r px-1 bg-gray-200">
                     <Input type="text" className={inputClasses} value={station} onChange={(e) => setStation(e.target.value)} required />
@@ -175,7 +177,8 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
                     </Button>
                 </div>
                 <div className={`col-2 px-1 bg-gray-200 flex`}>
-                    <Input type="text" className={"px-2 text-base font-medium leading-6 text-black bg-white border border-gray-400 focus:outline-none focus:ring-0 focus:border-blue-700 min-h-full"} value={los} onChange={(e) => setLos(e.target.value)} required disabled={isNew} />
+                    <Input type="text" className={"px-2 text-base font-medium leading-6 text-black bg-white border border-gray-400 focus:outline-none focus:ring-0 focus:border-blue-700 min-h-full"} 
+                        value={los} onChange={(e) => setLos(e.target.value)} required />
                     <Button className={`${project}-primary items-center justify-center px-2 py-1 text-sm text-base font-medium leading-6 whitespace-no-wrap border border-blue-700 rounded-md shadow-sm hover:cursor-pointer hover:brightness-90 focus:outline-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50`}
                         onClick={() => setLos(toStringNoSeconds(new Date()))} title="Set LOS to the current time" >
                         &lt;- Now
@@ -184,7 +187,8 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
                 <div className={'col-3 ' + grayClasses}>
                 </div>
                 <div className={`col-4 border-r px-1 bg-gray-200`}>
-                    <Input type="text" className={inputClasses} value={scsw} onChange={(e) => setScsw(e.target.value)} required disabled={isNew} />
+                    <Input type="text" className={inputClasses} value={scsw} 
+                        onChange={(e) => setScsw(e.target.value)} required />
                 </div>
                 <div className={'col-1 border-l ' + titleClasses}>
                     Satellite Mode:
@@ -199,7 +203,7 @@ export default function PassLogSER({ number }: { number: number | undefined }) {
                     DMB-2:
                 </div>
                 <div className={'col-1 w-full border-l px-1 bg-gray-200'}>
-                    <Listbox value={satMode} onChange={setSatMode} disabled={isNew}>
+                    <Listbox value={satMode} onChange={setSatMode}>
                         <ListboxButton className={listboxButtonClasses}>
                             {satMode || "Select Satellite Mode"}
                             <ChevronDownIcon

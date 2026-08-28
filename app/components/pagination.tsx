@@ -76,6 +76,12 @@ export interface PaginationProps {
   pageSizeOptions?: number[];
   /** Called with the new page size when the user changes it. Omit to hide the selector. */
   onPageSizeChange?: (size: number) => void;
+  /**
+   * Which end of the collection paging is anchored to.
+   * 'start' (default): page 1 is full, the last page holds the remainder.
+   * 'end': the last page is full, page 1 holds the remainder.
+   */
+  pagingAnchor?: 'start' | 'end';
 }
 
 export function Pagination({
@@ -85,8 +91,9 @@ export function Pagination({
   siblingCount = 1,
   totalItems,
   pageSize,
-  pageSizeOptions = [10, 25, 50, 100],
+  pageSizeOptions = [10, 20, 50, 100],
   onPageSizeChange,
+  pagingAnchor = 'start',
 }: PaginationProps) {
   const pages = usePaginationRange({ totalPages, currentPage, siblingCount });
 
@@ -97,9 +104,27 @@ export function Pagination({
     if (clamped !== currentPage) onPageChange(clamped);
   };
 
-  const rangeStart = totalItems != null && pageSize ? (currentPage - 1) * pageSize + 1 : null;
-  const rangeEnd =
-    totalItems != null && pageSize ? Math.min(currentPage * pageSize, totalItems) : null;
+  let rangeStart: number | null = null;
+  let rangeEnd: number | null = null;
+  if (totalItems != null && pageSize) {
+    if (pagingAnchor === 'end') {
+      // Mirrors the skip/take math used to fetch an end-anchored page: page 1
+      // holds the remainder, every page after that is a full page.
+      const remainder = totalItems % pageSize;
+      const skip =
+        currentPage === 1
+          ? 0
+          : remainder === 0
+            ? (currentPage - 1) * pageSize
+            : remainder + (currentPage - 2) * pageSize;
+      const take = currentPage === 1 ? (remainder === 0 ? pageSize : remainder) : pageSize;
+      rangeStart = skip + 1;
+      rangeEnd = Math.min(skip + take, totalItems);
+    } else {
+      rangeStart = (currentPage - 1) * pageSize + 1;
+      rangeEnd = Math.min(currentPage * pageSize, totalItems);
+    }
+  }
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

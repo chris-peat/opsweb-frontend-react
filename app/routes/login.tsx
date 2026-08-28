@@ -32,7 +32,6 @@ export async function clientAction({ request }: Route.ClientActionArgs) {
     }
   });
 
-  console.log("Sign in result: ", result);
   if (result.data?.signIn.status.succeeded) {
     localStorage.setItem("accessToken", result.data?.signIn.accessToken!);
     localStorage.setItem("accessTokenExpiry", result.data?.signIn.accessTokenExpiry!);

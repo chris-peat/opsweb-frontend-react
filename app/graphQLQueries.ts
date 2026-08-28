@@ -123,7 +123,7 @@ query ($projectId: String!, $input: OpslogEntrySelectionInput!) {
       entries {
         id
         eventDate
-        generationDate
+        creationDate
         type
         summary
       }

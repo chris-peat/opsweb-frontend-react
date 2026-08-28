@@ -15,7 +15,7 @@ export default function NavDropDownLevel2({ navGroup }: { navGroup: INavMenuGrou
 
     function modifyUrl(url: string) {
         if (url.includes(".aspx") && !url.startsWith("http")) {
-            return url = "https://opsweb.gsoc.dlr.de/" + url;
+            return url = window.__APP_CONFIG__.legacyRootUrl + "/" + url;
         }
         return url;
     }

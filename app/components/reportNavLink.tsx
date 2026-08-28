@@ -8,12 +8,10 @@ export default function ReportNavLink({ projectId, type, number, numDigits = 5 }
     switch (type) {
         case "SHL":
             return <Link to={`/project/:${projectId}/shift-handover-logs/:${number}`} className={classes}>{anchorText}</Link>
-        // case "PL":
-        //     return <NavLink to={"https://opsweb.gsoc.dlr.de/PassLog_Show.aspx?prj=" + projectId + "&nid=" + number}>{anchorText}</NavLink>
         case "RI":
-             return <Link to={`https://opsweb.gsoc.dlr.de/Recommendations_Show.aspx?prj=${projectId}&nid=${number}`} className={classes}>{anchorText}</Link>
+             return <Link to={`${window.__APP_CONFIG__.legacyRootUrl}/Recommendations_Show.aspx?prj=${projectId}&nid=${number}`} className={classes}>{anchorText}</Link>
         case "OL":
-             return <Link to={`https://opsweb.gsoc.dlr.de/OpsLog_Show.aspx?prj=${projectId}&nid=${number}`} className={classes}>{anchorText}</Link>
+             return <Link to={`${window.__APP_CONFIG__.legacyRootUrl}/OpsLog.aspx?prj=${projectId}&project=${projectId}&id=L-${number}`} className={classes}>{anchorText}</Link>
         default:
             return <span>Unknown report type: {type}</span>
     }

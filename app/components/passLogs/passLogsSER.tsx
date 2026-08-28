@@ -12,7 +12,7 @@ export default function PassLogsSER() {
     const { project, user } = useOpsWebContext();
     const [reports, setReports] = useState<IGenericReport[]>([]);
     const [page, setPage] = useState<number>(1);
-    const [pageSize, setPageSize] = useState(25);
+    const [pageSize, setPageSize] = useState(20);
     const [totalItems, setTotalItems] = useState(0);
     const totalPages = Math.ceil(totalItems / pageSize);
 
@@ -94,6 +94,7 @@ export default function PassLogsSER() {
                     <tr className={titleClasses}>
                         <th className="border px-1">#</th>
                         <th className="border px-1">Created</th>
+                        <th className="border px-1">Operator</th>
                         <th className="border px-1">Pass #</th>
                         <th className="border px-1">Station</th>
                         <th className="border px-1">AOS</th>
@@ -109,9 +110,10 @@ export default function PassLogsSER() {
                             onClick={() => navigate(`../pass-logs/:${report.number}`)}
                         >
                             <td className="border text-right px-1">{report.number}</td>
-                            <td className="border text-left px-1"><NavLink to={`../pass-logs/:${report.number}`}>{report.creationDate ? formatDateTime(new Date(report.creationDate)) : ""}</NavLink></td>
+                            <td className="border text-left px-1">{report.creationDate ? formatDateTime(new Date(report.creationDate)) : ""}</td>
+                            <td className="border text-left px-1">{report.detail?.operator}</td>
                             <td className="border text-left px-1">{report.detail?.passNumber}</td>
-                            <td className="border text-left px-1">{report.creator.name}</td>
+                            <td className="border text-left px-1">{report.detail?.station}</td>
                             <td className="border text-left px-1">{report.detail?.aos}</td>
                             <td className="border text-left px-1">{report.detail?.los}</td>
                             <td className="border text-left px-1">{report.detail?.comments}</td>

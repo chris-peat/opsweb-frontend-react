@@ -88,8 +88,6 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
             }
         });
 
-        console.log(data);
-
         if (!data?.project?.roles || data?.project?.roles.length === 0)
             return [];
 
@@ -289,7 +287,7 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
             }
         });
 
-        if (data?.project?.opslogEntries?.total ?? 0 === 0) {
+        if (data?.project.opslogEntries.total === 0) {
             setOpslogEntries([]);
         }
         else {
@@ -362,15 +360,15 @@ export default function ShiftHandoverLogH2S({ report }: { report: IGenericReport
     return (
         <form action={submit}>
             <div className="grid justify-start" >
-                <div className={'col-1 col-span-4 row-1 border-t border-l ' + titleClasses}>
+                <div className={'col-1 col-span-4 border-t border-l ' + titleClasses}>
                     Shift Handover Log
                 </div>
-                <div className={'col-5 col-span-2 row-1 min-w-100 border-t border-r ' + titleClasses}>
+                <div className={'col-5 col-span-2 min-w-100 border-t border-r ' + titleClasses}>
                     Notes
                 </div>
                 {/* <div className={'col-1 col-span-6 bg-red-600 h-px' }>
                 </div> */}
-                <div className={`col-1 row-2 align-end text-right border-l ${grayClasses}`}>
+                <div className={`col-1 align-end text-right border-l ${grayClasses}`}>
                     Shift
                 </div>
                 <div className={`col-2 row-2`}>

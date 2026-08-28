@@ -57,8 +57,7 @@ const GET_PROJECTS_FOR_USER: TypedDocumentNode<
 
 export const handle = {
   breadcrumbs: [{
-    //path: "/project/:projectId",
-    path: import.meta.env.DEV ? "/project/:projectId" : "https://opsweb.gsoc.dlr.de/?prj={project}",
+    path: import.meta.env.DEV ? "/project/:projectId" : window.__APP_CONFIG__.legacyRootUrl + "/?prj={project}",
     text: "Project Home"
   }]
 };
@@ -103,9 +102,9 @@ export default function Layout() {
           <div className={"fixed top-0 z-25 w-full h-14 flex items-center justify-items-stretch px-1 " + selectedProject?.id + "-primary"}>
             <div className="flex items-center">
               <div className="w-18 h-14 flex items-center justify-center">
-                <NavLink to={import.meta.env.DEV ? "/project/:" + (selectedProject?.id || "") : "https://opsweb.gsoc.dlr.de/?prj=" + selectedProject}>
-                  <img className="logo" src={"https://opsweb.gsoc.dlr.de/images/" + selectedProject?.logoFile} />
-                </NavLink>
+                <a href={import.meta.env.DEV ? "/project/:" + (selectedProject?.id || "") : "/?prj=" + selectedProject}>
+                  <img className="logo" src={window.__APP_CONFIG__.legacyRootUrl + "/images/" + selectedProject?.logoFile } />
+                </a>
               </div> <ProjectSelector projects={data.projects} selectedProject={selectedProject} />
             </div>
             <div className="flex items-center justify-end flex-1">
