@@ -12,6 +12,7 @@
   "dependencies": {
     "@apollo/client": "^4.1.7",
     "@headlessui/react": "^2.2.10",
+    "@heavens-above/astrolib-ts": "file:vendor/heavens-above-astrolib-ts-1.1.10.tgz",
     "@heroicons/react": "^2.2.0",
     "@react-router/node": "7.14.0",
     "@react-router/serve": "7.14.0",

@@ -11,12 +11,22 @@ import {
 import type { Route } from "./+types/root";
 import "./app.css";
 
+export function HydrateFallback() {
+  return (
+    <div id="loading-spinner">
+      <p>Loading application...</p>
+    </div>
+  );
+}
+
 export async function clientLoader() {
   return { config: window.__APP_CONFIG__ };
 }
 
 export const links: Route.LinksFunction = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
+  { rel: "icon", href: `${import.meta.env.BASE_URL}favicon.ico` },
+  // or for an SVG/PNG:
+  // { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },  { rel: "preconnect", href: "https://fonts.googleapis.com" },
   {
     rel: "preconnect",
     href: "https://fonts.gstatic.com",

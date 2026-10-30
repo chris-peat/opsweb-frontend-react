@@ -25,7 +25,10 @@ export default function TimeScale({ bgdColor }: { bgdColor: string; },) {
         ctx.textBaseline = "bottom";
         ctx.strokeStyle = 'black';
         ctx.lineWidth = 1;
-        let tickSpacing = 3600000;
+        const MINUTE = 60000;
+        const HOUR = 3600000;
+        const DAY = 86400000;
+        let tickSpacing = HOUR;
         if (duration <= 10000) {
             tickSpacing = 1000;
         }
@@ -39,21 +42,24 @@ export default function TimeScale({ bgdColor }: { bgdColor: string; },) {
             tickSpacing = 30000;
         }
         else if (duration <= 900000) {
-            tickSpacing = 60000;
+            tickSpacing = MINUTE;
         }
         else if (duration <= 1800000) {
-            tickSpacing = 120000;
+            tickSpacing = 2 * MINUTE;
         }
-        else if (duration <= 3600000 * 12) {
-            tickSpacing = 3600000;
+        else if (duration <= 36 * HOUR) {
+            tickSpacing = HOUR;
         }
-        else if (duration <= 86400000 * 27) {
-            tickSpacing = 86400000;
+        else if (duration <= 10 * DAY) {
+            tickSpacing = 12 * HOUR;
+        }
+        else if (duration <= 27 * DAY) {
+            tickSpacing = DAY;
         }
         else if (duration <= 86400000 * 200) {
             tickSpacing = 86400000 * 30;
         }
-        
+
         const firstTickTime = Math.ceil(startTime.getTime() / tickSpacing) * tickSpacing;
         for (let tick = firstTickTime; tick < startTime.getTime() + duration; tick += tickSpacing) {
             let x = getXFromTime(tick, width, startTime, duration);
@@ -65,10 +71,10 @@ export default function TimeScale({ bgdColor }: { bgdColor: string; },) {
             ctx.stroke();
         }
     }, [startTime, duration, windowWidth])
-    
+
     return (
         <div className="w-full h-full" ref={divRef}>
             <canvas className="overflow:hidden" ref={canvasRef} />
-        </div>  
+        </div>
     );
 }

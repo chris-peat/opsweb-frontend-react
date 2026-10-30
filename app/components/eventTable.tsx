@@ -20,7 +20,13 @@ function formatStartUtc(time: Date): string {
   return `${doy.toString().padStart(3, '0')} ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
-export default function EventTable({ rowCount, pastEventCount, imminentEventThreshhold, events }: { rowCount: number, pastEventCount: number, imminentEventThreshhold: number, events: IEvent[] },) {
+export default function EventTable({ rowCount, pastEventCount, imminentEventThreshhold, events, getRowColor }: {
+  rowCount: number,
+  pastEventCount: number,
+  imminentEventThreshhold: number,
+  events: IEvent[],
+  getRowColor: (event: IEvent) => string
+},) {
   const [time, setTime] = useState(new Date())
   const { duration, startTime } = useContext(TimelineContext);
 
@@ -49,22 +55,39 @@ export default function EventTable({ rowCount, pastEventCount, imminentEventThre
   for (let visibleEvent of visibleEvents) {
     const eventStartTicks = visibleEvent.startTime.getTime();
     const eventEndTicks = eventStartTicks + visibleEvent.properties["Duration"];
-    visibleEvent.countdown = formatDuration(visibleEvent.startTime.getTime() - time.getTime())
+    visibleEvent.countdown = formatDuration(visibleEvent.startTime.getTime() - time.getTime());
+    let remainingDuration = visibleEvent.properties["Duration"];
+    if (nowTicks > eventStartTicks) {
+      remainingDuration = Math.max(0, eventEndTicks - nowTicks);
+    }
+    if (nowTicks > eventEndTicks) 
+      visibleEvent.remainingDuration = "";
+    else
+      visibleEvent.remainingDuration = formatDuration(remainingDuration);
+    
     const endThreshold = eventEndTicks - imminentEventThreshhold * 1000;
     const startThreshold = eventStartTicks - imminentEventThreshhold * 1000;
+
+    // if the event is close to starting or ending, invert colors on even seconds to alert user
     if (((nowTicks > startThreshold && nowTicks < eventStartTicks) ||
       (nowTicks > endThreshold && nowTicks < eventEndTicks)) && evenSecond) {
       visibleEvent.future = true;
-      visibleEvent.colors = "bg-black text-white";
+      visibleEvent.color = "black";
+      visibleEvent.foreColor = "white";
     }
-    else
-      visibleEvent.colors = "bg-white text-black";
+    else {
+      visibleEvent.color = getRowColor ? getRowColor(visibleEvent) : "white";
+      visibleEvent.foreColor = "black";
+    }
 
     if (eventStartTicks <= nowTicks && eventEndTicks > nowTicks)
       visibleEvent.countdown = "In progress";
 
-    if (eventEndTicks <= nowTicks)
+    if (eventEndTicks <= nowTicks) {
       visibleEvent.countdown = "Finished";
+      visibleEvent.color = "white";
+      visibleEvent.foreColor = "black";
+    }
 
   }
 
@@ -80,15 +103,15 @@ export default function EventTable({ rowCount, pastEventCount, imminentEventThre
           <th className="border px-1">Duration</th>
         </tr>
       </thead>
-      <tbody className="border font-mono">
+      <tbody className="border">
         {visibleEvents.map((event) => (
-          <tr className={event.colors} key={event.id}>
+          <tr style={{ backgroundColor: event.color, color: event.foreColor }} key={event.id}>
             <td className="border text-right px-1">{event.countdown}</td>
             <td className="border px-1">{event.properties["Station"]}</td>
             <td className="border px-1">{event.properties["Description"]}</td>
-            <td className="border px-1">{event.properties["MaxElev"].toFixed(1)}</td>
+            <td className="border px-1">{event.properties["MaxElev"] ? event.properties["MaxElev"].toFixed(1) : "?"}</td>
             <td className="border px-1">{formatStartUtc(event.startTime)}</td>
-            <td className="border text-right px-1">{formatDuration(event.properties["Duration"])}</td>
+            <td className="border text-right px-1">{event.remainingDuration}</td>
           </tr>
         ))}
       </tbody>

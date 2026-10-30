@@ -24,10 +24,12 @@ export default function EventPlot({ bgdColor, eventColor, events, eventFilter }:
             if (eventFilter && !eventFilter(event)) return;
             const x = getXFromTime(event.startTime.getTime(), width, startTime, duration);
             const w = Math.max(getXFromTime(event.startTime.getTime() + event.properties["Duration"], width, startTime, duration) - x, 1);
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(x, 10, w, 20);
+            ctx.fillStyle = eventColor;
+            const y = 5;
+            const h = 30;
+            ctx.fillRect(x, y, w, h);
             ctx.strokeStyle = '#000';
-            ctx.strokeRect(x, 10, w, 20);
+            ctx.strokeRect(x, y, w, h);
             // ctx.fillStyle = '#000';
             // ctx.font = '12px monospace';
             // ctx.fillText(event.properties["Description"], x + 2, height / 2);
